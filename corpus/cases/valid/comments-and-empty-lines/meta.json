@@ -1,0 +1,7 @@
+{
+  "summary": "Comments and blank lines are ignored outside quoted or block scalars",
+  "tags": ["comments", "empty-lines", "unquoted-string"],
+  "spec_refs": ["grammar.comments", "grammar.empty-lines", "grammar.unquoted-strings"],
+  "modes": ["default"],
+  "notes": "Covers leading comments, blank lines, and trailing comments after a scalar."
+}

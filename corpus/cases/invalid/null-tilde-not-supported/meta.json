@@ -1,0 +1,7 @@
+{
+  "summary": "Tilde null syntax is rejected",
+  "tags": ["unsupported", "null"],
+  "spec_refs": ["unsupported.null-tilde"],
+  "modes": ["default"],
+  "notes": "The canonical null spelling is `null`."
+}

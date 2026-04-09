@@ -1,0 +1,7 @@
+{
+  "summary": "Comments may follow empty flow containers",
+  "tags": ["flow", "comment", "empty-flow"],
+  "spec_refs": ["containers.flow-style", "grammar.comments"],
+  "modes": ["default"],
+  "notes": "Covers trailing comments after both `{}` and `[]`."
+}

@@ -1,0 +1,8 @@
+int: 42
+zero: 0
+hex: 0xFF01
+decimal: 0.5
+exponent: 1e6
+infinity: .inf
+negative-infinity: -.inf
+nan: .nan

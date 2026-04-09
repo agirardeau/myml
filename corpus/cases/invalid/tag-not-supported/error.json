@@ -1,0 +1,7 @@
+{
+  "code": "unsupported-tag",
+  "category": "unsupported_feature",
+  "line": 1,
+  "column": 8,
+  "notes": "YAML tags are outside the language."
+}

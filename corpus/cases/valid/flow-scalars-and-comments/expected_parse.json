@@ -1,0 +1,10 @@
+{
+  "settings": {
+    "mode": "fast",
+    "retries": 3,
+    "enabled": false
+  },
+  "values": ["alpha", "beta", 0, null],
+  "empty-map": {},
+  "empty-list": []
+}

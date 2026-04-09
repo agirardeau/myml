@@ -1,0 +1,7 @@
+{
+  "code": "yaml11-safety-sexagesimal-like",
+  "category": "mode_restriction",
+  "line": 1,
+  "column": 8,
+  "notes": "Sexagesimal-looking strings are disallowed in YAML 1.1 Safety Mode."
+}

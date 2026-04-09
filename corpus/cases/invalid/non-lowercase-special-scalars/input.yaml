@@ -1,0 +1,1 @@
+values: [True, FALSE, Null, .Inf, -.Inf, .NaN]

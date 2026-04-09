@@ -1,0 +1,7 @@
+{
+  "summary": "Block mapping with nested sequence and nested mappings",
+  "tags": ["block", "mapping", "sequence", "nesting"],
+  "spec_refs": ["grammar.block-style-mappings", "grammar.block-style-sequences", "containers.block-style", "data-model.mapping-keys-strings"],
+  "modes": ["default"],
+  "notes": "Exercises the core block-style container forms."
+}

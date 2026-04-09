@@ -1,0 +1,7 @@
+{
+  "code": "unsupported-merge-key",
+  "category": "unsupported_feature",
+  "line": 3,
+  "column": 3,
+  "notes": "Merge keys are outside the language."
+}

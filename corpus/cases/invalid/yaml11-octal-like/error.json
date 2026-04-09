@@ -1,0 +1,7 @@
+{
+  "code": "yaml11-safety-octal-like",
+  "category": "mode_restriction",
+  "line": 1,
+  "column": 8,
+  "notes": "YAML 1.1-style octal-looking values are disallowed in YAML 1.1 Safety Mode."
+}

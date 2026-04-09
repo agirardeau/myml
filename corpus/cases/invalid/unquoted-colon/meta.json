@@ -1,0 +1,7 @@
+{
+  "summary": "Unquoted strings containing a colon are rejected",
+  "tags": ["unquoted-string", "colon", "lexical"],
+  "spec_refs": ["grammar.unquoted-strings", "error-behavior.unquoted-colon"],
+  "modes": ["default"],
+  "notes": "Keeps the failure focused on a plain scalar position."
+}

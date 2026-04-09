@@ -1,0 +1,7 @@
+{
+  "summary": "Flow containers are single-line and contain scalars only",
+  "tags": ["flow", "comment", "scalar-only", "empty-flow"],
+  "spec_refs": ["grammar.flow-style-mappings", "grammar.flow-style-sequences", "containers.flow-style", "grammar.comments"],
+  "modes": ["default"],
+  "notes": "Includes a trailing comment after a flow mapping and empty flow containers."
+}
