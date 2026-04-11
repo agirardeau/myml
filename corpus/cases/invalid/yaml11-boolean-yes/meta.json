@@ -1,7 +1,0 @@
-{
-  "summary": "YAML 1.1 Safety Mode rejects yes/no-style booleans",
-  "tags": ["y11safety", "boolean", "mode"],
-  "spec_refs": ["optional.yaml11-safety"],
-  "modes": ["y11safety"],
-  "notes": "Uses one representative spelling from the YAML 1.1 boolean family."
-}

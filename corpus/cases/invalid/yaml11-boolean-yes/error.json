@@ -1,7 +1,0 @@
-{
-  "code": "yaml11-safety-ambiguous-boolean",
-  "category": "mode_restriction",
-  "line": 1,
-  "column": 8,
-  "notes": "`yes` is disallowed in YAML 1.1 Safety Mode."
-}

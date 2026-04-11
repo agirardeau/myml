@@ -1,0 +1,23 @@
+{
+  "summary": "Tilde null syntax is rejected",
+  "tags": [
+    "unsupported",
+    "null"
+  ],
+  "spec_refs": [
+    "unsupported.null-tilde"
+  ],
+  "notes": "The canonical null spelling is `null`.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "unsupported-null-tilde",
+        "category": "unsupported_feature",
+        "line": 1,
+        "column": 8
+      }
+    }
+  },
+  "emit_profiles": {}
+}

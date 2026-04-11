@@ -1,7 +1,0 @@
-{
-  "summary": "Leading-dot decimals are rejected",
-  "tags": ["number", "decimal", "lexical"],
-  "spec_refs": ["grammar.number-forms", "unsupported.invalid-numeric-form"],
-  "modes": ["default"],
-  "notes": "The grammar requires decimals like `0.5` instead."
-}

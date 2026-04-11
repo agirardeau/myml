@@ -1,7 +1,0 @@
-{
-  "code": "invalid-indentation",
-  "category": "structural_error",
-  "line": 3,
-  "column": 4,
-  "notes": "Sibling entries in the same mapping must begin at the same indentation column."
-}

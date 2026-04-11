@@ -1,0 +1,23 @@
+{
+  "summary": "Explicit YAML tags are rejected",
+  "tags": [
+    "unsupported",
+    "tag"
+  ],
+  "spec_refs": [
+    "unsupported.tags"
+  ],
+  "notes": "Covers explicit tag syntax in a scalar position.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "unsupported-tag",
+        "category": "unsupported_feature",
+        "line": 1,
+        "column": 8
+      }
+    }
+  },
+  "emit_profiles": {}
+}

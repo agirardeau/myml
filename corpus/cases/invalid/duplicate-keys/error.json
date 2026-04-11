@@ -1,7 +1,0 @@
-{
-  "code": "duplicate-key",
-  "category": "semantic_error",
-  "line": 2,
-  "column": 1,
-  "notes": "Duplicate keys are rejected after parsing to final string values."
-}

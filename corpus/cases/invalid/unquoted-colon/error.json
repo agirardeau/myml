@@ -1,7 +1,0 @@
-{
-  "code": "unquoted-colon",
-  "category": "lexical_error",
-  "line": 1,
-  "column": 8,
-  "notes": "`:` is not permitted within unquoted string scalars."
-}

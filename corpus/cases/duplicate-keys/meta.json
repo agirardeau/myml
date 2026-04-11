@@ -1,0 +1,23 @@
+{
+  "summary": "Duplicate mapping keys are rejected",
+  "tags": [
+    "duplicate-key",
+    "mapping"
+  ],
+  "spec_refs": [
+    "containers.duplicate-keys"
+  ],
+  "notes": "Uses the same unquoted key spelling twice.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "duplicate-key",
+        "category": "semantic_error",
+        "line": 2,
+        "column": 1
+      }
+    }
+  },
+  "emit_profiles": {}
+}

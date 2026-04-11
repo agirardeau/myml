@@ -1,7 +1,0 @@
-{
-  "summary": "YAML 1.1 Safety Mode rejects octal-looking strings",
-  "tags": ["y11safety", "octal", "mode"],
-  "spec_refs": ["optional.yaml11-safety"],
-  "modes": ["y11safety"],
-  "notes": "This value is also outside Myml numeric syntax in default mode, but the case is retained as a mode-specific corpus fixture."
-}

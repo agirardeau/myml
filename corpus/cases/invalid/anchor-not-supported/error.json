@@ -1,7 +1,0 @@
-{
-  "code": "unsupported-anchor",
-  "category": "unsupported_feature",
-  "line": 1,
-  "column": 4,
-  "notes": "Anchors and aliases are outside the language."
-}

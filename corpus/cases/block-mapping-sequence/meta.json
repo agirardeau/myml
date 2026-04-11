@@ -1,0 +1,46 @@
+{
+  "summary": "Block mapping with nested sequence and nested mappings",
+  "tags": [
+    "block",
+    "mapping",
+    "sequence",
+    "nesting"
+  ],
+  "spec_refs": [
+    "grammar.block-style-mappings",
+    "grammar.block-style-sequences",
+    "containers.block-style",
+    "data-model.mapping-keys-strings"
+  ],
+  "emit_profiles": {
+    "default": {
+      "mode": "default",
+      "expect_output": "expected_emit_default.yaml"
+    },
+    "strict": {
+      "mode": "strict",
+      "expect_output": "expected_emit_strict.yaml"
+    }
+  },
+  "notes": "Exercises the core block-style container forms.",
+  "parse_profiles": {
+    "baseline": {
+      "modes": [
+        "default",
+        "y11safety"
+      ],
+      "expect_node_graph": "expected_node_graph.json"
+    },
+    "strict": {
+      "modes": [
+        "strict"
+      ],
+      "expect_error": {
+        "code": "strict-mode-unquoted-string",
+        "category": "mode_restriction",
+        "line": 2,
+        "column": 10
+      }
+    }
+  }
+}

@@ -1,7 +1,0 @@
-{
-  "summary": "Negative zero is rejected",
-  "tags": ["number", "negative-zero", "lexical"],
-  "spec_refs": ["grammar.number-forms", "unsupported.invalid-numeric-form"],
-  "modes": ["default"],
-  "notes": "Covers the explicit numeric restriction against `-0`."
-}

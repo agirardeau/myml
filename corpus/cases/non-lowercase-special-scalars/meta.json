@@ -1,0 +1,28 @@
+{
+  "summary": "Non-lowercase spellings of special scalars are rejected",
+  "tags": [
+    "boolean",
+    "null",
+    "number",
+    "case",
+    "unsupported"
+  ],
+  "spec_refs": [
+    "grammar.number-forms",
+    "grammar.boolean-and-null-forms",
+    "unsupported.non-lowercase-special-values"
+  ],
+  "notes": "Includes representative non-lowercase spellings for booleans, null, infinity, negative infinity, and NaN.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "unsupported-non-lowercase-special-scalar",
+        "category": "unsupported_feature",
+        "line": 1,
+        "column": 10
+      }
+    }
+  },
+  "emit_profiles": {}
+}

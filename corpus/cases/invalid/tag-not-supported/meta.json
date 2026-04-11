@@ -1,7 +1,0 @@
-{
-  "summary": "Explicit YAML tags are rejected",
-  "tags": ["unsupported", "tag"],
-  "spec_refs": ["unsupported.tags"],
-  "modes": ["default"],
-  "notes": "Covers explicit tag syntax in a scalar position."
-}

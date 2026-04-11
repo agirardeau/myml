@@ -1,7 +1,0 @@
-{
-  "summary": "Nested containers inside flow containers are rejected",
-  "tags": ["flow", "scalar-only", "unsupported"],
-  "spec_refs": ["containers.flow-style"],
-  "modes": ["default"],
-  "notes": "Uses a flow mapping as a flow sequence element."
-}

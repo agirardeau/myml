@@ -1,7 +1,0 @@
-{
-  "code": "invalid-number-leading-dot-decimal",
-  "category": "lexical_error",
-  "line": 1,
-  "column": 8,
-  "notes": "`.5` is outside the supported numeric forms."
-}

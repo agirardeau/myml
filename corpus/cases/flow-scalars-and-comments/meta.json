@@ -1,0 +1,56 @@
+{
+  "summary": "Flow containers are single-line and contain scalars only",
+  "tags": [
+    "flow",
+    "comment",
+    "scalar-only",
+    "empty-flow"
+  ],
+  "spec_refs": [
+    "grammar.flow-style-mappings",
+    "grammar.flow-style-sequences",
+    "containers.flow-style",
+    "grammar.comments"
+  ],
+  "emit_profiles": {
+    "default": {
+      "mode": "default",
+      "expect_output": "expected_emit_default.yaml"
+    },
+    "strict": {
+      "mode": "strict",
+      "expect_output": "expected_emit_strict.yaml"
+    },
+    "roundtrip": {
+      "mode": "default",
+      "options": {
+        "roundtrip": true
+      },
+      "requires": [
+        "roundtrip"
+      ],
+      "expect_output": "expected_emit_roundtrip.yaml"
+    }
+  },
+  "notes": "Includes a trailing comment after a flow mapping and empty flow containers.",
+  "parse_profiles": {
+    "baseline": {
+      "modes": [
+        "default",
+        "y11safety"
+      ],
+      "expect_node_graph": "expected_node_graph.json"
+    },
+    "strict": {
+      "modes": [
+        "strict"
+      ],
+      "expect_error": {
+        "code": "strict-mode-unquoted-string",
+        "category": "mode_restriction",
+        "line": 1,
+        "column": 17
+      }
+    }
+  }
+}

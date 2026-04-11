@@ -1,0 +1,25 @@
+{
+  "summary": "Misaligned block mapping entries are rejected",
+  "tags": [
+    "indentation",
+    "block-mapping",
+    "structural"
+  ],
+  "spec_refs": [
+    "containers.block-style",
+    "unsupported.invalid-indentation"
+  ],
+  "notes": "The third line is indented by one extra space relative to its sibling.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "invalid-indentation",
+        "category": "structural_error",
+        "line": 3,
+        "column": 4
+      }
+    }
+  },
+  "emit_profiles": {}
+}

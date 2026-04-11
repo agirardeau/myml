@@ -5,8 +5,8 @@ This directory contains the canonical conformance corpus for Myml.
 ## Purpose
 
 The corpus provides stable fixtures for parser and emitter validation. Each case
-pairs a Myml input document with machine-readable expectations and metadata that
-links the case back to the language specification.
+pairs one Myml input document with machine-readable expectations and metadata
+that links the case back to the language specification.
 
 ## File Extension Convention
 
@@ -14,8 +14,8 @@ Myml source files in this repository use the `.yaml` extension.
 
 This is a practical tooling convention rather than part of the Myml language
 definition. A dedicated `.myml` extension may become preferable later, but
-`.yaml` is the recommended extension until editor and tool support for a Myml-
-specific extension is practical.
+`.yaml` remains the recommended extension until editor and tool support for a
+Myml-specific extension is practical.
 
 ## Layout
 
@@ -24,52 +24,30 @@ corpus/
   README.md
   status.md
   cases/
-    valid/
-      <case-id>/
-        input.yaml
-        expected_parse.json
-        expected_emit_<profile>.yaml
-        meta.json
-    invalid/
-      <case-id>/
-        input.yaml
-        error.json
-        meta.json
+    <case-id>/
+      input.yaml
+      expected_node_graph.json          # present when one or more parse profiles succeed
+      expected_emit_<profile>.yaml      # present for successful emit profiles
+      meta.json
 ```
 
-## Case Conventions
+Every case lives directly under `corpus/cases/<case-id>/`. There is no separate
+`valid/` or `invalid/` directory split. A case directory is the stable identity
+for one input document, and `meta.json` describes how that same input behaves in
+each supported parse mode and emit configuration.
 
 Case identifiers use kebab-case and remain stable once published. The case id is
 inferred from the directory name and is not duplicated inside `meta.json`.
 
-### Valid cases
-
-A valid case contains:
-
-* `input.yaml`: Myml source text that should parse successfully
-* `expected_parse.json`: canonical parsed value in a neutral data format
-* one or more `expected_emit_<profile>.yaml` files: canonical emitted Myml text
-  for supported emit profiles
-* `meta.json`: authoritative case metadata
-
-### Invalid cases
-
-An invalid case contains:
-
-* `input.yaml`: Myml source text that should be rejected
-* `error.json`: structured error expectation
-* `meta.json`: authoritative case metadata
-
-`error.json` is intentionally structured around portable fields such as error
-code, category, and optional location metadata. Exact human-readable message
-text is not required.
-
 ## Why JSON for Control Files
 
-JSON keeps the parse and error oracle separate from the syntax under test.
+JSON keeps the semantic oracle and structured error expectations separate from
+the Myml syntax under test.
 
 * `input.yaml` and `expected_emit_<profile>.yaml` are Myml text fixtures
-* `meta.json`, `expected_parse.json`, and `error.json` are neutral test-control files
+* `meta.json` and `expected_node_graph.json` are neutral test-control files
+* parse and emit failures are represented as structured JSON data inline in
+  `meta.json`
 
 This avoids requiring a second YAML-capable parser for corpus control data and
 reduces the risk that a buggy Myml implementation could accidentally agree with
@@ -82,31 +60,71 @@ Each `meta.json` file follows this schema-by-convention:
 * `summary`: short one-line description
 * `tags`: topical labels
 * `spec_refs`: language-spec sections or rule labels covered by the case
-* `modes`: applicable parse modes such as `default`, `strict`, or `y11safety`
 * `notes`: optional explanatory notes
-* `emit_profiles`: mapping from emit profile names to fixture file names such as
-  `expected_emit_default.yaml`
-* `roundtrip_edits`: optional roundtrip edit checks keyed to emit profiles
+* `parse_profiles`: mapping from parse profile ids to parse expectations
+* `emit_profiles`: mapping from emit profile ids to emit expectations
 
 Per-case `meta.json` files are the source of truth for case metadata. Tooling
 that needs a catalog or coverage view is expected to derive it from those files.
 
+### Parse Profiles
+
+Each entry in `parse_profiles` is keyed by a contributor-chosen profile id and
+declares:
+
+* `modes`: either an explicit array of supported parse modes or the scalar
+  string `"all"`
+* optional `requires`: optional implementation capabilities needed for the
+  profile to be relevant
+* exactly one of:
+  * `expect_node_graph`: references `expected_node_graph.json`
+  * `expect_error`: structured inline parse failure expectation
+
+`expect_error` is intentionally structured around portable fields such as error
+code, category, and optional location metadata. Exact human-readable message
+text is not required.
+
+### Emit Profiles
+
+Each entry in `emit_profiles` is keyed by a contributor-chosen profile id and
+declares:
+
+* `mode`: the emitter mode to use
+* optional `options`: additional emit options
+* optional `requires`: optional implementation capabilities needed for the
+  profile to be relevant
+* exactly one of:
+  * `expect_output`: references an `expected_emit_<profile>.yaml` fixture
+  * `expect_error`: structured inline emit failure expectation
+
+The current corpus uses `options.roundtrip` for emit profiles that require
+roundtrip-preserving parsing before emission. Some roundtrip profiles also use
+`options.edits` to describe deterministic mutations applied to the roundtrip
+document before emission.
+
+## Profile Invariants
+
+Parse profiles must cover every supported parse mode exactly once.
+
+* If a profile uses `modes: "all"`, it is the only parse profile for that case.
+* Otherwise, the explicit `modes` arrays across all parse profiles form an exact
+  partition of the supported parse modes.
+* Every case includes at least one parse profile with no `requires`.
+
+Successful parse profiles within a case all share one canonical
+`expected_node_graph.json` fixture. That artifact captures the semantic node
+graph for the case independent of parser mode.
+
+Cases with at least one successful parse profile also include at least one emit
+profile with no `requires`, so baseline implementations still have an
+unconditional emit expectation to exercise.
+
 ## Parse and Emit Expectations
 
-`expected_parse.json` stores the canonical parsed value.
+`expected_node_graph.json` stores the canonical parsed value for any successful
+parse profile in the case.
 
-`meta.json` maps each supported emit profile to a YAML fixture file containing
-the canonical emitted Myml text. The current convention uses profile names such
-as:
-
-* `default`: emit behavior for plain values in default mode
-* `strict`: emit behavior for plain values in strict mode
-* `y11safety`: emit behavior for plain values in y11safety mode
-* `roundtrip`: no-op roundtrip dump output
-* additional profile names referenced by `meta.json` roundtrip edit checks
-
-Each mapped fixture file is named `expected_emit_<profile>.yaml`.
-
+Emit fixtures remain separate YAML files named `expected_emit_<profile>.yaml`.
 This keeps emitter verification separate from parse verification while still
 keeping profile discovery machine-readable in JSON control data and the emitted
 text itself in human-readable Myml fixtures.
@@ -120,10 +138,15 @@ and follow-up work. It does not duplicate per-case metadata.
 
 When adding a new case:
 
-1. Create a new stable case directory under `cases/valid` or `cases/invalid`.
+1. Create a new stable case directory under `cases/<case-id>/`.
 2. Keep the input focused on one primary rule or a small related cluster.
 3. Add precise `spec_refs` to the case `meta.json`.
-4. Prefer structured error expectations over implementation-specific wording.
-5. Use JSON for metadata plus parse/error expectations, and YAML for the Myml
-   input under test and each emitted-output fixture.
-6. Update `status.md` only if the overall coverage picture changes.
+4. Use `parse_profiles` to describe how the same input behaves across supported
+   parse modes.
+5. Reuse one canonical `expected_node_graph.json` for all successful parse
+   profiles in the case.
+6. Keep structured parse and emit failure expectations inline in `meta.json`.
+7. Use `requires` only for optional capabilities, and ensure a baseline parse
+   profile and baseline emit profile remain available without `requires` when
+   the case has a successful parse path.
+8. Update `status.md` only if the overall coverage picture changes.

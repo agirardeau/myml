@@ -1,7 +1,0 @@
-{
-  "code": "strict-mode-unquoted-string",
-  "category": "mode_restriction",
-  "line": 1,
-  "column": 8,
-  "notes": "Unquoted string scalars are not permitted in strict mode."
-}

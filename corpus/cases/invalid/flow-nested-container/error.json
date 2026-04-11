@@ -1,7 +1,0 @@
-{
-  "code": "flow-non-scalar-element",
-  "category": "unsupported_feature",
-  "line": 1,
-  "column": 16,
-  "notes": "Flow containers may contain scalar values only."
-}

@@ -1,0 +1,38 @@
+{
+  "summary": "Nested containers inside flow containers are rejected",
+  "tags": [
+    "flow",
+    "scalar-only",
+    "unsupported"
+  ],
+  "spec_refs": [
+    "containers.flow-style"
+  ],
+  "notes": "Uses a flow mapping as a flow sequence element.",
+  "parse_profiles": {
+    "default_y11safety": {
+      "modes": [
+        "default",
+        "y11safety"
+      ],
+      "expect_error": {
+        "code": "flow-non-scalar-element",
+        "category": "unsupported_feature",
+        "line": 1,
+        "column": 16
+      }
+    },
+    "strict": {
+      "modes": [
+        "strict"
+      ],
+      "expect_error": {
+        "code": "strict-mode-unquoted-string",
+        "category": "mode_restriction",
+        "line": 1,
+        "column": 9
+      }
+    }
+  },
+  "emit_profiles": {}
+}

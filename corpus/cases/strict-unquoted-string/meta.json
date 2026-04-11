@@ -1,0 +1,43 @@
+{
+  "summary": "Strict mode rejects unquoted string scalars",
+  "tags": [
+    "strict-mode",
+    "string",
+    "mode"
+  ],
+  "spec_refs": [
+    "optional.strict-mode",
+    "scalar-resolution.string"
+  ],
+  "notes": "The same document is valid in default mode.",
+  "parse_profiles": {
+    "baseline": {
+      "modes": [
+        "default",
+        "y11safety"
+      ],
+      "expect_node_graph": "expected_node_graph.json"
+    },
+    "strict": {
+      "modes": [
+        "strict"
+      ],
+      "expect_error": {
+        "code": "strict-mode-unquoted-string",
+        "category": "mode_restriction",
+        "line": 1,
+        "column": 8
+      }
+    }
+  },
+  "emit_profiles": {
+    "default": {
+      "mode": "default",
+      "expect_output": "expected_emit_default.yaml"
+    },
+    "strict": {
+      "mode": "strict",
+      "expect_output": "expected_emit_strict.yaml"
+    }
+  }
+}

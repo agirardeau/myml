@@ -1,0 +1,23 @@
+{
+  "summary": "YAML merge keys are rejected",
+  "tags": [
+    "unsupported",
+    "merge-key"
+  ],
+  "spec_refs": [
+    "unsupported.merge-keys"
+  ],
+  "notes": "Uses the canonical `<<` merge-key syntax.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "unsupported-merge-key",
+        "category": "unsupported_feature",
+        "line": 3,
+        "column": 3
+      }
+    }
+  },
+  "emit_profiles": {}
+}

@@ -1,7 +1,0 @@
-{
-  "summary": "Strict mode rejects unquoted string scalars",
-  "tags": ["strict-mode", "string", "mode"],
-  "spec_refs": ["optional.strict-mode", "scalar-resolution.string"],
-  "modes": ["strict"],
-  "notes": "The same document is valid in default mode."
-}

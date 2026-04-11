@@ -1,7 +1,0 @@
-{
-  "summary": "Misaligned block mapping entries are rejected",
-  "tags": ["indentation", "block-mapping", "structural"],
-  "spec_refs": ["containers.block-style", "unsupported.invalid-indentation"],
-  "modes": ["default"],
-  "notes": "The third line is indented by one extra space relative to its sibling."
-}

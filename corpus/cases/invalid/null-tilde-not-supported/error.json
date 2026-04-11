@@ -1,7 +1,0 @@
-{
-  "code": "unsupported-null-tilde",
-  "category": "unsupported_feature",
-  "line": 1,
-  "column": 8,
-  "notes": "`~` is not a supported null spelling."
-}

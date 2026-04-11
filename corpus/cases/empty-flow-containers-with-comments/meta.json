@@ -1,0 +1,39 @@
+{
+  "summary": "Comments may follow empty flow containers",
+  "tags": [
+    "flow",
+    "comment",
+    "empty-flow"
+  ],
+  "spec_refs": [
+    "containers.flow-style",
+    "grammar.comments"
+  ],
+  "emit_profiles": {
+    "default": {
+      "mode": "default",
+      "expect_output": "expected_emit_default.yaml"
+    },
+    "strict": {
+      "mode": "strict",
+      "expect_output": "expected_emit_strict.yaml"
+    },
+    "roundtrip": {
+      "mode": "default",
+      "options": {
+        "roundtrip": true
+      },
+      "requires": [
+        "roundtrip"
+      ],
+      "expect_output": "expected_emit_roundtrip.yaml"
+    }
+  },
+  "notes": "Covers trailing comments after both `{}` and `[]`.",
+  "parse_profiles": {
+    "baseline": {
+      "modes": "all",
+      "expect_node_graph": "expected_node_graph.json"
+    }
+  }
+}

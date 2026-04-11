@@ -1,7 +1,0 @@
-{
-  "summary": "YAML 1.1 Safety Mode rejects sexagesimal-looking strings",
-  "tags": ["y11safety", "sexagesimal", "mode"],
-  "spec_refs": ["optional.yaml11-safety"],
-  "modes": ["y11safety"],
-  "notes": "This case also contains `:` and therefore would be invalid in default mode for a different reason."
-}

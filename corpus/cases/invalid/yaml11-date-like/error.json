@@ -1,7 +1,0 @@
-{
-  "code": "yaml11-safety-date-like",
-  "category": "mode_restriction",
-  "line": 1,
-  "column": 8,
-  "notes": "Date-like strings are disallowed in YAML 1.1 Safety Mode."
-}

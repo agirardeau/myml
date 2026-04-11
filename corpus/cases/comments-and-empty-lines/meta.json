@@ -1,0 +1,72 @@
+{
+  "summary": "Comments and blank lines are ignored outside quoted or block scalars",
+  "tags": [
+    "comments",
+    "empty-lines",
+    "unquoted-string"
+  ],
+  "spec_refs": [
+    "grammar.comments",
+    "grammar.empty-lines",
+    "grammar.unquoted-strings"
+  ],
+  "emit_profiles": {
+    "default": {
+      "mode": "default",
+      "expect_output": "expected_emit_default.yaml"
+    },
+    "strict": {
+      "mode": "strict",
+      "expect_output": "expected_emit_strict.yaml"
+    },
+    "roundtrip": {
+      "mode": "default",
+      "options": {
+        "roundtrip": true
+      },
+      "requires": [
+        "roundtrip"
+      ],
+      "expect_output": "expected_emit_roundtrip.yaml"
+    },
+    "roundtrip_edit_note": {
+      "mode": "default",
+      "options": {
+        "roundtrip": true,
+        "edits": [
+          {
+            "path": [
+              "note"
+            ],
+            "value": "updated text"
+          }
+        ]
+      },
+      "requires": [
+        "roundtrip"
+      ],
+      "expect_output": "expected_emit_roundtrip_edit_note.yaml"
+    }
+  },
+  "notes": "Covers leading comments, blank lines, and trailing comments after a scalar.",
+  "parse_profiles": {
+    "baseline": {
+      "modes": [
+        "default",
+        "y11safety"
+      ],
+      "expect_node_graph": "expected_node_graph.json"
+    },
+    "strict": {
+      "modes": [
+        "strict"
+      ],
+      "expect_error": {
+        "code": "strict-mode-unquoted-string",
+        "category": "mode_restriction",
+        "line": 2,
+        "column": 7
+      }
+    }
+  }
+}

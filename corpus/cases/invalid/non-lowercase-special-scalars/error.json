@@ -1,7 +1,0 @@
-{
-  "code": "unsupported-non-lowercase-special-scalar",
-  "category": "unsupported_feature",
-  "line": 1,
-  "column": 10,
-  "notes": "Special scalar spellings must use lowercase letters only."
-}

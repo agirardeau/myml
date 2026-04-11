@@ -1,0 +1,25 @@
+{
+  "summary": "Negative zero is rejected",
+  "tags": [
+    "number",
+    "negative-zero",
+    "lexical"
+  ],
+  "spec_refs": [
+    "grammar.number-forms",
+    "unsupported.invalid-numeric-form"
+  ],
+  "notes": "Covers the explicit numeric restriction against `-0`.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "invalid-number-negative-zero",
+        "category": "lexical_error",
+        "line": 1,
+        "column": 8
+      }
+    }
+  },
+  "emit_profiles": {}
+}

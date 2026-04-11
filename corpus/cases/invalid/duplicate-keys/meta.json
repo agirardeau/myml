@@ -1,7 +1,0 @@
-{
-  "summary": "Duplicate mapping keys are rejected",
-  "tags": ["duplicate-key", "mapping"],
-  "spec_refs": ["containers.duplicate-keys"],
-  "modes": ["default"],
-  "notes": "Uses the same unquoted key spelling twice."
-}

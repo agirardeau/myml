@@ -1,7 +1,0 @@
-{
-  "summary": "YAML merge keys are rejected",
-  "tags": ["unsupported", "merge-key"],
-  "spec_refs": ["unsupported.merge-keys"],
-  "modes": ["default"],
-  "notes": "Uses the canonical `<<` merge-key syntax."
-}

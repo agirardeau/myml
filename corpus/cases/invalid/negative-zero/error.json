@@ -1,7 +1,0 @@
-{
-  "code": "invalid-number-negative-zero",
-  "category": "lexical_error",
-  "line": 1,
-  "column": 8,
-  "notes": "`-0` is outside the supported numeric forms."
-}

@@ -1,0 +1,24 @@
+{
+  "summary": "Anchors and aliases are rejected",
+  "tags": [
+    "unsupported",
+    "anchor",
+    "alias"
+  ],
+  "spec_refs": [
+    "unsupported.anchors"
+  ],
+  "notes": "A parser may report the anchor or alias first; either reflects the same unsupported feature family.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "unsupported-anchor",
+        "category": "unsupported_feature",
+        "line": 1,
+        "column": 4
+      }
+    }
+  },
+  "emit_profiles": {}
+}
