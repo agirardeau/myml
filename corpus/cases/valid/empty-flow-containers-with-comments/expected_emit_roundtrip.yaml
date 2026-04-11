@@ -1,0 +1,2 @@
+empty-map: {} # empty flow mapping with trailing comment
+empty-list: [] # empty flow sequence with trailing comment

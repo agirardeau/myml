@@ -1,0 +1,5 @@
+# leading comment
+name: alpha
+
+note: simple text # trailing comment
+count: 0

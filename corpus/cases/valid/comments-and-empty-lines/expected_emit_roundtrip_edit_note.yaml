@@ -1,0 +1,5 @@
+# leading comment
+name: alpha
+
+note: updated text # trailing comment
+count: 0

@@ -1,0 +1,7 @@
+root:
+  title: "Example"
+  enabled: true
+  count: 2
+  items:
+    - name: "one"
+    - name: "two"

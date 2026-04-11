@@ -1,4 +1,5 @@
 literal: |
   first line
   second line
-folded: "alpha beta\n"
+folded: |
+  alpha beta

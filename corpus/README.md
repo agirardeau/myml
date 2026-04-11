@@ -28,7 +28,7 @@ corpus/
       <case-id>/
         input.yaml
         expected_parse.json
-        expected_emit.yaml
+        expected_emit_<profile>.yaml
         meta.json
     invalid/
       <case-id>/
@@ -48,7 +48,8 @@ A valid case contains:
 
 * `input.yaml`: Myml source text that should parse successfully
 * `expected_parse.json`: canonical parsed value in a neutral data format
-* `expected_emit.yaml`: canonical emitted Myml text
+* one or more `expected_emit_<profile>.yaml` files: canonical emitted Myml text
+  for supported emit profiles
 * `meta.json`: authoritative case metadata
 
 ### Invalid cases
@@ -67,7 +68,7 @@ text is not required.
 
 JSON keeps the parse and error oracle separate from the syntax under test.
 
-* `input.yaml` and `expected_emit.yaml` are Myml text fixtures
+* `input.yaml` and `expected_emit_<profile>.yaml` are Myml text fixtures
 * `meta.json`, `expected_parse.json`, and `error.json` are neutral test-control files
 
 This avoids requiring a second YAML-capable parser for corpus control data and
@@ -81,8 +82,11 @@ Each `meta.json` file follows this schema-by-convention:
 * `summary`: short one-line description
 * `tags`: topical labels
 * `spec_refs`: language-spec sections or rule labels covered by the case
-* `modes`: applicable modes such as `default`, `strict`, or `yaml11-safety`
+* `modes`: applicable parse modes such as `default`, `strict`, or `y11safety`
 * `notes`: optional explanatory notes
+* `emit_profiles`: mapping from emit profile names to fixture file names such as
+  `expected_emit_default.yaml`
+* `roundtrip_edits`: optional roundtrip edit checks keyed to emit profiles
 
 Per-case `meta.json` files are the source of truth for case metadata. Tooling
 that needs a catalog or coverage view is expected to derive it from those files.
@@ -91,11 +95,21 @@ that needs a catalog or coverage view is expected to derive it from those files.
 
 `expected_parse.json` stores the canonical parsed value.
 
-`expected_emit.yaml` stores the canonical emitted Myml text for emitter
-verification.
+`meta.json` maps each supported emit profile to a YAML fixture file containing
+the canonical emitted Myml text. The current convention uses profile names such
+as:
+
+* `default`: emit behavior for plain values in default mode
+* `strict`: emit behavior for plain values in strict mode
+* `y11safety`: emit behavior for plain values in y11safety mode
+* `roundtrip`: no-op roundtrip dump output
+* additional profile names referenced by `meta.json` roundtrip edit checks
+
+Each mapped fixture file is named `expected_emit_<profile>.yaml`.
 
 This keeps emitter verification separate from parse verification while still
-making the emitted fixture easy for humans to read and compare.
+keeping profile discovery machine-readable in JSON control data and the emitted
+text itself in human-readable Myml fixtures.
 
 ## Coverage Status
 
@@ -110,5 +124,6 @@ When adding a new case:
 2. Keep the input focused on one primary rule or a small related cluster.
 3. Add precise `spec_refs` to the case `meta.json`.
 4. Prefer structured error expectations over implementation-specific wording.
-5. Use JSON for metadata and parse/error expectations, and YAML for Myml input and emitted-output fixtures.
+5. Use JSON for metadata plus parse/error expectations, and YAML for the Myml
+   input under test and each emitted-output fixture.
 6. Update `status.md` only if the overall coverage picture changes.

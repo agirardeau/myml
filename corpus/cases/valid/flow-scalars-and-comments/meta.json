@@ -3,5 +3,10 @@
   "tags": ["flow", "comment", "scalar-only", "empty-flow"],
   "spec_refs": ["grammar.flow-style-mappings", "grammar.flow-style-sequences", "containers.flow-style", "grammar.comments"],
   "modes": ["default"],
+  "emit_profiles": {
+    "default": "expected_emit_default.yaml",
+    "strict": "expected_emit_strict.yaml",
+    "roundtrip": "expected_emit_roundtrip.yaml"
+  },
   "notes": "Includes a trailing comment after a flow mapping and empty flow containers."
 }

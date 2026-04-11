@@ -2,6 +2,11 @@
   "summary": "Comments may follow empty flow containers",
   "tags": ["flow", "comment", "empty-flow"],
   "spec_refs": ["containers.flow-style", "grammar.comments"],
-  "modes": ["default"],
+  "modes": ["default", "strict", "y11safety"],
+  "emit_profiles": {
+    "default": "expected_emit_default.yaml",
+    "strict": "expected_emit_strict.yaml",
+    "roundtrip": "expected_emit_roundtrip.yaml"
+  },
   "notes": "Covers trailing comments after both `{}` and `[]`."
 }

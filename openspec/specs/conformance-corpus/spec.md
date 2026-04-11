@@ -11,7 +11,10 @@ The repository contains a canonical conformance corpus for Myml.
 - **WHEN** a test case represents valid Myml input
 - **THEN** the corpus stores the input document together with a machine-readable
   parse expectation
-- **AND** the corpus stores a machine-readable emit expectation
+- **AND** the corpus stores one or more emitted-output fixture files named
+  `expected_emit_{PROFILE}.yaml`
+- **AND** `meta.json` identifies which emitted-output fixture file applies to
+  each supported library setting profile
 - **AND** the case includes metadata describing the rule areas it covers
 
 #### Scenario: Invalid case is represented canonically
@@ -40,6 +43,15 @@ Corpus control files use JSON rather than YAML.
 - **WHEN** a test harness reads corpus metadata or expectations
 - **THEN** it reads JSON control files rather than YAML control files
 - **AND** the Myml input under test remains isolated in `input.yaml`
+
+#### Scenario: Harness reads multiple emit expectations
+
+- **WHEN** a test harness reads emit expectations for a valid case
+- **THEN** it can discover the emitted-output fixture file for each supported
+  setting profile from `meta.json`
+- **AND** it reads the expected emitted Myml text from those
+  `expected_emit_{PROFILE}.yaml` files
+- **AND** it does not need a language-specific sidecar expectation format
 
 ### Requirement: Coverage Status Is Documented
 

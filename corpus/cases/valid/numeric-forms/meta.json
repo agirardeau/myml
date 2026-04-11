@@ -2,6 +2,10 @@
   "summary": "Supported numeric forms parse successfully",
   "tags": ["numbers", "integer", "hex", "decimal", "exponent", "inf", "nan"],
   "spec_refs": ["grammar.number-forms", "scalar-resolution.number"],
-  "modes": ["default"],
+  "modes": ["default", "strict", "y11safety"],
+  "emit_profiles": {
+    "default": "expected_emit_default.yaml",
+    "strict": "expected_emit_strict.yaml"
+  },
   "notes": "Expected parse values normalize hex and exponent notation while preserving special float spellings in emitted output."
 }

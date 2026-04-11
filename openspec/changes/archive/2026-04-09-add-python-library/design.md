@@ -178,9 +178,11 @@ the Python library because the same semantic value may have different expected
 emitted text in `default`, `strict`, `y11safety`, and `roundtrip` settings.
 
 To keep verification corpus-driven instead of introducing Python-only approval
-fixtures, valid-case emit expectations should support multiple named variants
-keyed by library setting profile. A harness can then run the same case through
-multiple settings and compare the output to the appropriate corpus variant.
+fixtures, valid cases should support multiple named emitted-output fixtures,
+with one `expected_emit_{PROFILE}.yaml` file per setting profile and
+`meta.json` recording the profile-to-file mapping. A harness can then run the
+same case through multiple settings and compare the output to the appropriate
+fixture file.
 
 Mode-sensitive parse failures do not require a schema change. Those can remain
 separate corpus cases because the same input being valid in one mode and
@@ -213,7 +215,7 @@ This keeps the implementation aligned with the repo-owned acceptance data.
   keeping default mode lean and by benchmarking only the default path as the
   general-use baseline.
 * Corpus coverage may not yet capture all formatting-preservation edge cases ->
-  Mitigate by extending the corpus to include mode-aware emit variants and
+  Mitigate by extending the corpus to include mode-aware emit fixture files and
   roundtrip-preservation cases before treating the harness as complete.
 
 ## Migration Plan
