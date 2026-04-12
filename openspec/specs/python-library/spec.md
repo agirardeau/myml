@@ -1,6 +1,6 @@
-# Spec Delta: Python Library
+# Spec: Python Library
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Library exposes a familiar Myml load and dump API
 

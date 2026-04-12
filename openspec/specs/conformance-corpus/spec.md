@@ -1,6 +1,6 @@
-# Spec Delta: Conformance Corpus
+# Spec: Conformance Corpus
 
-## MODIFIED Requirements
+## Requirements
 
 ### Requirement: Canonical Conformance Corpus
 
@@ -69,8 +69,6 @@ case identifiers or rewriting earlier fixtures.
   expected output artifacts
 - **AND** repo-level coverage notes can be updated without restructuring
   existing cases
-
-## ADDED Requirements
 
 ### Requirement: Parse Profiles Cover Supported Modes
 
