@@ -27,7 +27,7 @@ def infer_scalar_kind(value: Any) -> str:
 def dump_to_text(value: Any, *, mode: str = "default") -> str:
     mode = validate_mode(mode)
     document = _as_document(value, mode=mode)
-    if isinstance(value, (RoundTripMapping, RoundTripSequence)) and document.mode == mode and not document.dirty:
+    if isinstance(value, (RoundTripMapping, RoundTripSequence)) and document.original_text and document.mode == mode and not document.dirty:
         return document.original_text
     pieces = [*document.leading_lines]
     pieces.extend(_render_node(document.root, indent=0, mode=mode, roundtrip=True, in_sequence=False))
@@ -47,6 +47,11 @@ def _as_document(value: Any, *, mode: str) -> DocumentNode:
 
 def _render_node(node: Node, *, indent: int, mode: str, roundtrip: bool, in_sequence: bool) -> list[str]:
     if isinstance(node, ScalarNode):
+        if node.style in {"literal", "folded"}:
+            indicator = "|" if node.style == "literal" else ">"
+            lines = [indicator]
+            lines.extend("  " + segment for segment in _render_block_scalar_lines(str(node.value)))
+            return lines
         return [_render_scalar(node, mode=mode, in_flow=False, preserve_style=roundtrip and not node.dirty)]
     if isinstance(node, MappingNode):
         if node.style == "flow" and roundtrip:
@@ -173,7 +178,7 @@ def _render_flow_mapping(node: MappingNode, *, mode: str) -> str:
     for entry in node.entries:
         if not isinstance(entry.value, ScalarNode):
             raise TypeError("Flow mappings may contain scalar values only.")
-        parts.append(f"{_render_key(entry.key)}: {_render_scalar(entry.value, mode=mode, in_flow=True, preserve_style=not entry.value.dirty)}")
+        parts.append(f"{_render_key(entry.key)}: {_render_scalar(entry.value, mode=mode, in_flow=True, preserve_style=True)}")
     return "{%s}" % ", ".join(parts)
 
 
@@ -182,7 +187,7 @@ def _render_flow_sequence(node: SequenceNode, *, mode: str) -> str:
     for item in node.items:
         if not isinstance(item.value, ScalarNode):
             raise TypeError("Flow sequences may contain scalar values only.")
-        parts.append(_render_scalar(item.value, mode=mode, in_flow=True, preserve_style=not item.value.dirty))
+        parts.append(_render_scalar(item.value, mode=mode, in_flow=True, preserve_style=True))
     return "[%s]" % ", ".join(parts)
 
 
@@ -226,6 +231,10 @@ def _render_number(value: Any) -> str:
 
 
 def _render_string(text: str, *, mode: str, in_flow: bool, style: str | None) -> str:
+    if style == "single":
+        return _single_quote_string(text)
+    if style == "double":
+        return _quote_string(text)
     if "\n" in text:
         return _quote_string(text)
     if mode == "strict":
@@ -264,6 +273,10 @@ def _string_requires_quotes(text: str, *, mode: str, in_flow: bool) -> bool:
 
 def _quote_string(text: str) -> str:
     return json.dumps(text, ensure_ascii=False)
+
+
+def _single_quote_string(text: str) -> str:
+    return "'" + text.replace("'", "''") + "'"
 
 
 def _render_block_scalar_lines(text: str) -> list[str]:
