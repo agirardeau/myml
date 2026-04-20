@@ -2,19 +2,22 @@ schema: spec-driven
 
 # Project context (optional)
 # This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+# Tech stack, conventions, style guides, domain knowledge, etc.
+# (Example)
+# context: |
+#   Tech stack: TypeScript, React, Node.js
+#   We use conventional commits
+#   Domain: e-commerce platform
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+# Per-artifact rules
+rules:
+  spec: >
+    Requirements don't use EARS notation. They are as concise as possible while
+    remaining human-readable and non-ambiguous. Content is grouped into
+    bulleted lists rather than paragraphs
+
+    Specs may reference other documents (like docs/lang.md) without duplicating
+    their content.
+
+  tasks: >
+    Tasks do not include spec changes

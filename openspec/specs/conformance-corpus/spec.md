@@ -4,167 +4,74 @@
 
 ### Requirement: Canonical Conformance Corpus
 
-The repository MUST contain a canonical conformance corpus for Myml.
+- The repository contains a canonical conformance corpus for Myml.
+- Each case representing one Myml input document lives under `corpus/cases/<case-id>/`.
+- The input under test is stored in `input.yaml`.
+- Successful parse outcomes reference a canonical `expected_node_graph.json` artifact.
+- Successful emit outcomes reference one or more `expected_emit_{PROFILE}.yaml` files.
+- `meta.json` describes parse and emit profiles for the case.
 
-#### Scenario: Case is represented canonically
+### Requirement: Per-case metadata is authoritative
 
-- **WHEN** a test case represents one Myml input document
-- **THEN** the corpus stores that case under `corpus/cases/<case-id>/`
-- **AND** the case stores the Myml input under test in `input.yaml`
-- **AND** successful parse outcomes for the case reference a canonical
-  `expected_node_graph.json` artifact
-- **AND** successful emit outcomes for the case reference one or more
-  `expected_emit_{PROFILE}.yaml` files
-- **AND** the case includes `meta.json` describing parse and emit profiles
+- Per-case `meta.json` files are the authoritative source of corpus metadata and profile expectations.
+- Tooling discovers corpus cases and covered rules from the per-case `meta.json` files.
+- No separate checked-in aggregate metadata file is required for correctness.
+- `meta.json` contains `parse_profiles` and `emit_profiles` keyed by profile id.
+- Each parse profile declares `modes`.
+- Each emit profile declares `mode`.
+- Either kind of profile may declare `requires`.
+- Parse and emit failures are represented as structured JSON data in `meta.json`.
+- Emit profile metadata is discovered from `meta.json`.
+- Expected emitted Myml text is read from the referenced `expected_emit_{PROFILE}.yaml` files.
+- Descriptive case metadata remains in the same `meta.json` file.
 
-### Requirement: Per-Case Metadata Is Authoritative
+### Requirement: Test suite metadata does not require correct YAML parser to access
 
-Per-case `meta.json` files MUST be the authoritative source of corpus metadata
-and profile expectations.
+- All control files use JSON rather than YAML.
 
-#### Scenario: Tooling needs a case catalog
+### Requirement: Corpus layout supports growth
 
-- **WHEN** tooling needs to discover corpus cases or their covered rules
-- **THEN** it derives that information from the per-case `meta.json` files
-- **AND** no separate checked-in aggregate metadata file is required for
-  correctness
+- New cases can be added without restructuring fixtures or existing cases.
 
-#### Scenario: Tooling discovers parse and emit profiles
+### Requirement: Parse profiles cover supported modes
 
-- **WHEN** tooling reads a case `meta.json`
-- **THEN** it finds `parse_profiles` and `emit_profiles` keyed by profile id
-- **AND** each parse profile declares `modes`
-- **AND** each emit profile declares `mode`
-- **AND** either kind of profile may declare `requires`
-- **AND** descriptive case metadata remains in the same `meta.json` file
+- Each case defines parse expectations that cover every supported parse mode exactly once.
+- Each parse profile declares `modes` as either an explicit array of supported mode names or the scalar value `"all"`.
+- The set of parse profiles covers every supported parse mode exactly once.
+- If one parse profile uses `"all"`, no other parse profile is present.
+- A successful parse profile declares `expect_node_graph`.
+- A successful parse profile references the case's canonical `expected_node_graph.json`.
+- A successful parse profile does not declare `expect_error`.
+- A failed parse profile declares `expect_error`.
+- A failed parse profile stores the error expectation inline in `meta.json`.
+- A failed parse profile does not declare `expect_node_graph`.
 
-### Requirement: JSON Control Files Separate the Oracle from the Syntax Under Test
+### Requirement: Emit profiles express serialization expectations
 
-Corpus control files MUST use JSON rather than YAML.
+- Each case defines zero or more named emit profiles describing serializer behavior for the case's semantic graph.
+- A successful emit profile declares a top-level `mode`.
+- A successful emit profile may declare additional emit parameters under `options`.
+- A successful emit profile declares `expect_output` referencing an `expected_emit_{PROFILE}.yaml` file.
+- A successful emit profile does not declare `expect_error`.
+- A failed emit profile declares a top-level `mode`.
+- A failed emit profile may declare additional emit parameters under `options`.
+- A failed emit profile declares `expect_error` inline in `meta.json`.
+- A failed emit profile does not declare `expect_output`.
 
-#### Scenario: Harness reads expected parse or error data
+### Requirement: Optional feature gating is explicit
 
-- **WHEN** a test harness reads corpus metadata or expectations
-- **THEN** it reads JSON control files rather than YAML control files
-- **AND** the Myml input under test remains isolated in `input.yaml`
+- Parse and emit profiles support optional feature requirements through a `requires` array.
+- Profiles that depend on optional implementation features declare those features in `requires`.
+- Harnesses can use `requires` to decide whether a profile is relevant.
+- Each case includes at least one parse profile with no `requires`.
+- Each case includes at least one emit profile with no `requires`.
 
-#### Scenario: Harness reads emit expectations
+### Requirement: Language boundary cases are explicit in the corpus
 
-- **WHEN** a test harness reads emit expectations for a case
-- **THEN** it discovers emit profile metadata from `meta.json`
-- **AND** it reads expected emitted Myml text from the referenced
-  `expected_emit_{PROFILE}.yaml` files
-- **AND** parse and emit failures are represented as structured JSON data in
-  `meta.json`
-
-### Requirement: Corpus Layout Supports Growth
-
-The corpus layout MUST support incremental growth without changing existing
-case identifiers or rewriting earlier fixtures.
-
-#### Scenario: New case is added
-
-- **WHEN** a contributor adds a new corpus case
-- **THEN** the case can be added in its own stable directory with metadata and
-  expected output artifacts
-- **AND** repo-level coverage notes can be updated without restructuring
-  existing cases
-
-### Requirement: Parse Profiles Cover Supported Modes
-
-Each case MUST define parse expectations that cover every supported parse mode
-exactly once.
-
-#### Scenario: Parse profiles enumerate supported modes
-
-- **WHEN** a contributor defines parse profiles for a case
-- **THEN** each parse profile declares `modes` as either an explicit array of
-  supported mode names or the scalar value `"all"`
-- **AND** the set of parse profiles covers every supported parse mode for the
-  corpus exactly once
-- **AND** if one parse profile uses `"all"`, no other parse profile is present
-
-#### Scenario: Parse profile succeeds
-
-- **WHEN** a parse profile expects a successful parse outcome
-- **THEN** that profile declares `expect_node_graph`
-- **AND** it references the case's canonical `expected_node_graph.json`
-- **AND** it does not declare `expect_error`
-
-#### Scenario: Parse profile fails
-
-- **WHEN** a parse profile expects a rejected parse outcome
-- **THEN** that profile declares `expect_error`
-- **AND** the error expectation is stored inline in `meta.json`
-- **AND** it does not declare `expect_node_graph`
-
-### Requirement: Emit Profiles Express Serialization Expectations
-
-Each case MUST define zero or more named emit profiles describing serializer
-behavior for the case's semantic graph.
-
-#### Scenario: Emit profile succeeds
-
-- **WHEN** an emit profile expects successful serialization
-- **THEN** the profile declares a top-level `mode`
-- **AND** it may declare additional emit parameters under `options`
-- **AND** it declares `expect_output` referencing an
-  `expected_emit_{PROFILE}.yaml` file
-- **AND** it does not declare `expect_error`
-
-#### Scenario: Emit profile fails
-
-- **WHEN** an emit profile expects serialization to fail
-- **THEN** the profile declares a top-level `mode`
-- **AND** it may declare additional emit parameters under `options`
-- **AND** it declares `expect_error` inline in `meta.json`
-- **AND** it does not declare `expect_output`
-
-### Requirement: Optional Feature Gating Is Explicit
-
-The corpus MUST support optional feature requirements on parse and emit
-profiles through a `requires` array.
-
-#### Scenario: Harness checks profile applicability
-
-- **WHEN** a parse or emit profile depends on optional implementation features
-- **THEN** the profile declares those features in `requires`
-- **AND** a harness can use `requires` to decide whether the profile is
-  relevant
-
-#### Scenario: Case provides a baseline path
-
-- **WHEN** a contributor authors a corpus case
-- **THEN** the case includes at least one parse profile with no `requires`
-- **AND** the case includes at least one emit profile with no `requires`
-
-### Requirement: Numeric lexical boundary cases are explicit in the corpus
-
-The conformance corpus MUST include focused cases that distinguish accepted
-plain fractional decimals from rejected separator syntax and rejected
-non-normalized scientific notation.
-
-#### Scenario: Plain fractional decimal is covered as valid input
-
-- **WHEN** a contributor adds or updates a corpus case for a plain fractional
-  decimal such as `0.5`
-- **THEN** the case includes a successful parse profile referencing the
-  canonical `expected_node_graph.json`
-- **AND** the case includes at least one successful emit profile for the same
-  semantic value
-
-#### Scenario: Underscore separator syntax is covered as invalid input
-
-- **WHEN** a contributor adds or updates a corpus case containing an underscore
-  separator in a numeric token, such as `1_000`
-- **THEN** the case records a rejected parse outcome in `meta.json`
-- **AND** the case does not declare a successful parse profile for that input
-
-#### Scenario: Non-normalized scientific notation is covered as invalid input
-
-- **WHEN** a contributor adds or updates a corpus case containing scientific
-  notation whose coefficient is outside `1 <= m < 10`, such as `0.5e2` or
-  `10e2`
-- **THEN** the case records a rejected parse outcome in `meta.json`
-- **AND** the corpus still includes a separate successful case for normalized
-  scientific notation such as `1e6` or `1.5e2`
+- The corpus includes focused cases for language boundaries defined by `docs/lang.md`, including:
+  - Scalar forms and scalar resolution behavior
+  - Block-style and flow-style container rules
+  - Quoted, unquoted, and block scalar string behavior
+  - Comments and empty-line handling
+  - Unsupported YAML features and other invalid inputs
+  - Mode-specific behavior such as `strict` and `y11safety`

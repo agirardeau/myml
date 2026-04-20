@@ -4,204 +4,71 @@
 
 ### Requirement: Library exposes a familiar Myml load and dump API
 
-The Python library MUST expose `load`, `loads`, `dump`, and `dumps` entry
-points for parsing and emitting Myml documents. Each entry point MUST accept a
-`mode` option with the values `default`, `strict`, and `y11safety`, and
-MUST accept a `roundtrip` option that enables formatting-preserving behavior.
-
-#### Scenario: Caller parses from text
-
-- **WHEN** a caller passes a Myml document string to `loads`
-- **THEN** the library parses the document according to the selected mode
-- **AND** the library returns either plain Python values or roundtrip-aware
-  values based on the `roundtrip` option
-
-#### Scenario: Caller emits to text
-
-- **WHEN** a caller passes Python values to `dumps`
-- **THEN** the library emits a Myml document according to the selected mode
-- **AND** the emitter honors roundtrip-preserved formatting when the supplied
-  values came from a roundtrip parse
-- **AND** verification of that emitted output is driven by the checked-in
-  conformance corpus
+- Expose `load`, `loads`, `dump`, and `dumps`.
+- Every entry point accepts `mode` with the values `default`, `strict`, and `y11safety`.
+- Every entry point accepts `roundtrip` to enable formatting-preserving behavior.
+- `loads` parses a Myml document string according to the selected mode.
+- `loads` returns plain Python values or roundtrip-aware values based on `roundtrip`.
+- `dumps` emits a Myml document according to the selected mode.
+- `dumps` honors preserved formatting when the supplied values come from a roundtrip parse.
+- Emit verification is driven by the checked-in conformance corpus.
 
 ### Requirement: Baseline installation has no required runtime dependencies
 
-The Python library MUST be usable without any required external runtime
-dependencies beyond Python itself and the library package, while still allowing
-future optional extras.
-
-#### Scenario: Caller installs the baseline package
-
-- **WHEN** a user installs the library without opting into any extras
-- **THEN** they can import and use the parser and emitter without installing a
-  separate runtime dependency or native extension
-
-#### Scenario: Project adds an optional accelerator later
-
-- **WHEN** the project introduces an optional performance-oriented extra
-- **THEN** the baseline install remains supported without that extra
-- **AND** the public API behavior remains defined independently of whether the
-  optional extra is present
+- The baseline package is usable with no required runtime dependencies beyond Python itself and the library package.
+- Installing without extras is sufficient to import and use the parser and emitter.
+- Optional extras or accelerators do not change baseline support or the public API contract.
 
 ### Requirement: Default mode conforms to the Myml language definition
 
-In `default` mode, the library MUST accept exactly the Myml language described
-in `docs/lang.md` and MUST reject unsupported YAML features and invalid scalar
-forms.
-
-#### Scenario: Parser matches corpus expectations
-
-- **WHEN** a caller parses an input from the checked-in valid or invalid
-  conformance corpus in the applicable mode
-- **THEN** the parser result or raised error matches the expectations recorded
-  for that corpus case
-- **AND** corpus cases act as normative parser acceptance data for the library
-
-#### Scenario: Supported Myml input is accepted
-
-- **WHEN** a caller parses a document that is valid under `docs/lang.md`
-- **THEN** the library returns the corresponding Python representation graph
-- **AND** scalar resolution follows the order defined by the Myml language
-  definition
-
-#### Scenario: Plain fractional decimal with one leading zero is accepted
-
-- **WHEN** a caller parses a plain decimal whose fractional form begins with
-  exactly `0.`, such as `0.5`
-- **THEN** the library accepts that value as a number
-- **AND** additional leading zeroes remain disallowed
-
-#### Scenario: Normalized scientific notation is accepted
-
-- **WHEN** a caller parses scientific notation whose coefficient `m` satisfies
-  `1 <= m < 10`, such as `1e6` or `1.5e2`
-- **THEN** the library accepts that value as a number
-- **AND** the parsed numeric value matches the represented magnitude
-
-#### Scenario: Non-normalized scientific notation is rejected
-
-- **WHEN** a caller parses scientific notation whose coefficient falls outside
-  `1 <= m < 10`, such as `0.5e2` or `10e2`
-- **THEN** the library raises an error
-- **AND** the error identifies the scientific notation as invalid
-
-#### Scenario: Unsupported numeric separators are rejected
-
-- **WHEN** a caller parses a numeric token containing underscore separators
-- **THEN** the library raises an error
-- **AND** the error identifies the numeric token as invalid
-
-#### Scenario: Unsupported YAML input is rejected
-
-- **WHEN** a caller parses input that uses a YAML construct outside the Myml
-  language definition
-- **THEN** the library raises an error
-- **AND** the error identifies the unsupported construct or malformed syntax as
-  the cause
+- `default` mode accepts exactly the Myml language described in `docs/lang.md`.
+- Unsupported YAML features are rejected.
+- Invalid scalar forms are rejected.
+- Parsing a document that is valid under `docs/lang.md` returns the corresponding Python representation graph.
+- Scalar resolution follows the order defined by the Myml language definition.
+- Parser results and raised errors for applicable corpus cases match the checked-in expectations.
+- Corpus cases act as normative parser acceptance data for the library.
 
 ### Requirement: Default emission follows Myml serialization defaults
 
-In `default` mode, emitted documents MUST follow the serialization defaults in
-`docs/lang.md` unless roundtrip preservation requires reusing existing source
-formatting.
-
-#### Scenario: Caller emits plain Python values in default mode
-
-- **WHEN** a caller emits values that were not loaded in roundtrip mode
-- **THEN** the library writes UTF-8 Myml text using block-style containers
-- **AND** the library uses unquoted keys and unquoted string scalars whenever
-  permitted by the language definition
-
-#### Scenario: Caller emits roundtrip values without edits
-
-- **WHEN** a caller loads a document with `roundtrip=True` and immediately dumps
-  it without modifying the returned values
-- **THEN** the emitted text matches the original document exactly
-- **AND** the corpus contains the corresponding expected emit result for that
-  setting profile
+- In `default` mode, emitted documents follow the serialization defaults in `docs/lang.md` unless roundtrip preservation requires reusing existing source formatting.
+- Emitting plain Python values writes UTF-8 Myml text using block-style containers.
+- Emitting plain Python values uses unquoted keys and unquoted string scalars whenever the language definition permits them.
+- Loading a document with `roundtrip=True` and dumping it without edits reproduces the original document exactly.
+- The conformance corpus includes the expected emit result for that setting profile.
 
 ### Requirement: Roundtrip mode preserves document formatting metadata
 
-When `roundtrip=True`, the library MUST preserve comments, whitespace, scalar
-style, and key order so callers can edit documents without losing unaffected
-source formatting.
-
-#### Scenario: Caller edits one value in a roundtrip document
-
-- **WHEN** a caller loads a mapping with `roundtrip=True`, changes one scalar
-  value, and dumps the result
-- **THEN** unchanged comments and key order are preserved
-- **AND** unaffected surrounding whitespace and scalar styles remain preserved
-  where the edit does not require reformatting
-
-#### Scenario: Caller reads formatting-preserving values
-
-- **WHEN** a caller loads a document with `roundtrip=True`
-- **THEN** the returned values retain enough metadata for the emitter to
-  preserve formatting
-- **AND** the values remain mutable by normal Python-style update operations
+- `roundtrip=True` preserves comments, whitespace, scalar style, and key order.
+- Editing one scalar value in a roundtrip-loaded mapping preserves unchanged comments and key order.
+- Unaffected surrounding whitespace and scalar styles remain preserved when the edit does not require reformatting.
+- Roundtrip-loaded values retain enough metadata for the emitter to preserve formatting.
+- Roundtrip-loaded values remain mutable by normal Python-style update operations.
 
 ### Requirement: Strict mode forbids unquoted string scalars
 
-In `strict` mode, the library MUST enforce the strict-mode rules from
-`docs/lang.md`.
-
-#### Scenario: Strict mode rejects unquoted string input
-
-- **WHEN** a caller parses a document in `strict` mode that contains an
-  unquoted string scalar
-- **THEN** the library raises an error
-- **AND** the error indicates that strict mode requires quoted string scalars
-
-#### Scenario: Strict mode quotes emitted strings
-
-- **WHEN** a caller emits string values in `strict` mode
-- **THEN** the library serializes those string scalars in quoted form
-- **AND** the emitted document remains valid Myml
+- `strict` mode enforces the strict-mode rules from `docs/lang.md`.
+- Parsing an unquoted string scalar in `strict` mode raises an error.
+- The strict-mode parse error states that quoted string scalars are required.
+- Emitting string values in `strict` mode serializes those scalars in quoted form.
+- Strict-mode output remains valid Myml.
 
 ### Requirement: Compatibility mode protects against YAML 1.1 ambiguities
 
-In `y11safety` mode, the library MUST enforce the YAML 1.1 safety rules
-described in `docs/lang.md` under YAML 1.1 Safety Mode.
-
-#### Scenario: Compatibility mode rejects ambiguous unquoted input
-
-- **WHEN** a caller parses a document in `y11safety` mode that contains
-  an unquoted scalar such as `yes`, `no`, `on`, `off`, an ISO-like date/time,
-  or another YAML 1.1-ambiguous form
-- **THEN** the library raises an error
-- **AND** the error indicates that the scalar is disallowed in compatibility
-  mode
-
-#### Scenario: Compatibility mode emits safe strings
-
-- **WHEN** a caller emits a string value in `y11safety` mode whose plain
-  form would be ambiguous to a YAML 1.1 parser
-- **THEN** the library emits that value in a quoted form or another Myml-safe
-  representation
-- **AND** the emitted output avoids YAML 1.1 ambiguity
+- `y11safety` mode enforces the YAML 1.1 safety rules described in `docs/lang.md`.
+- Unquoted ambiguous scalars such as `yes`, `no`, `on`, `off`, ISO-like date/time values, and other YAML 1.1-ambiguous forms are rejected in `y11safety` mode.
+- Compatibility-mode parse errors identify the scalar as disallowed for that mode.
+- Emitting a string whose plain form would be ambiguous to a YAML 1.1 parser uses a quoted form or another Myml-safe representation.
+- Compatibility-mode output avoids YAML 1.1 ambiguity.
 
 ### Requirement: Corpus-driven verification covers library acceptance behavior
 
-The library's acceptance verification MUST be driven by the checked-in
-conformance corpus rather than a separate Python-only expectation format.
-
-#### Scenario: Harness verifies parse and emit behavior
-
-- **WHEN** the Python library verification harness runs
-- **THEN** it evaluates parser and emitter behavior against corpus expectations
-- **AND** it does not require a second approval dataset outside the corpus for
-  mode-sensitive parse and emit acceptance checks
+- Acceptance verification is driven by the checked-in conformance corpus.
+- The Python library verification harness evaluates parser and emitter behavior against corpus expectations.
+- Mode-sensitive parse and emit acceptance checks do not require a second approval dataset outside the corpus.
 
 ### Requirement: Parse errors are useful to callers
 
-The library MUST raise useful parse errors for invalid input.
-
-#### Scenario: Error reports source location
-
-- **WHEN** a caller parses malformed input
-- **THEN** the raised error includes line and column information when that
-  location can be determined
-- **AND** the error message identifies the relevant Myml rule or invalid syntax
-  category
+- Invalid input raises useful parse errors.
+- Parse errors include line and column information when the location can be determined.
+- Parse errors identify the relevant Myml rule or invalid syntax category.
