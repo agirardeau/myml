@@ -6,6 +6,7 @@
     "hex",
     "decimal",
     "exponent",
+    "normalized-scientific",
     "inf",
     "nan"
   ],
@@ -23,7 +24,7 @@
       "expect_output": "expected_emit_strict.yaml"
     }
   },
-  "notes": "Expected parse values normalize hex and exponent notation while preserving special float spellings in emitted output.",
+  "notes": "Expected parse values normalize hex and scientific notation, including a fractional normalized coefficient, while preserving special float spellings in emitted output.",
   "parse_profiles": {
     "baseline": {
       "modes": "all",

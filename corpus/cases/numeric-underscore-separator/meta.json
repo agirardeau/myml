@@ -1,0 +1,25 @@
+{
+  "summary": "Numeric underscore separators are rejected",
+  "tags": [
+    "number",
+    "separator",
+    "lexical"
+  ],
+  "spec_refs": [
+    "grammar.number-forms",
+    "unsupported.invalid-numeric-form"
+  ],
+  "notes": "Myml does not support YAML-style underscore separators in numeric tokens.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "invalid-number-underscore-separator",
+        "category": "lexical_error",
+        "line": 1,
+        "column": 8
+      }
+    }
+  },
+  "emit_profiles": {}
+}

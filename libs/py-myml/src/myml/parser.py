@@ -12,7 +12,10 @@ from .roundtrip import to_plain_data, wrap_node
 _INT_RE = re.compile(r"^(?:0|-?[1-9][0-9]*)$")
 _HEX_RE = re.compile(r"^0x[0-9A-Fa-f]+$")
 _DECIMAL_RE = re.compile(r"^-?(?:0|[1-9][0-9]*)\.[0-9]+$")
-_EXP_RE = re.compile(r"^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?e-?[0-9]+$")
+_EXP_RE = re.compile(r"^-?(?:[1-9](?:\.[0-9]+)?)e-?[0-9]+$")
+_NUMERIC_UNDERSCORE_RE = re.compile(r"^-?(?:0x[0-9A-Fa-f_]+|[0-9][0-9_]*(?:\.[0-9_]+)?(?:e-?[0-9_]+)?)$")
+_LEADING_ZERO_DECIMAL_RE = re.compile(r"^-?0[0-9]+\.[0-9]+$")
+_SCI_RE = re.compile(r"^-?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)e-?[0-9]+$")
 _UNICODE_KEY_RE = re.compile(r"^[\w][\w-]*$", re.UNICODE)
 
 
@@ -332,10 +335,26 @@ class Parser:
             return ScalarNode(float("nan"), kind="number", style="plain", raw=token)
         if token.lower() in {"true", "false", "null", ".inf", "-.inf", ".nan"} and token not in {"true", "false", "null", ".inf", "-.inf", ".nan"}:
             self._error("Special scalars must use lowercase spellings.", code="unsupported-non-lowercase-special-scalar", line=line, column=column, category="unsupported_feature")
+        if "_" in token and _NUMERIC_UNDERSCORE_RE.match(token):
+            self._error(
+                "Numeric separators are not supported.",
+                code="invalid-number-underscore-separator",
+                line=line,
+                column=column,
+                category="lexical_error",
+            )
         if token == "-0":
             self._error("`-0` is not a supported numeric form.", code="invalid-number-negative-zero", line=line, column=column, category="lexical_error")
         if token.startswith(".") and len(token) > 1 and token[1:].isdigit():
             self._error("Leading-dot decimals are not supported.", code="invalid-number-leading-dot-decimal", line=line, column=column, category="lexical_error")
+        if _LEADING_ZERO_DECIMAL_RE.match(token):
+            self._error(
+                "Plain fractional decimals may use exactly one `0.` prefix.",
+                code="invalid-number-leading-zero-decimal",
+                line=line,
+                column=column,
+                category="lexical_error",
+            )
         if _HEX_RE.match(token):
             return ScalarNode(int(token, 16), kind="number", style="plain", raw=token)
         if _INT_RE.match(token):
@@ -346,6 +365,14 @@ class Parser:
             number = float(token)
             value = int(number) if number.is_integer() else number
             return ScalarNode(value, kind="number", style="plain", raw=token)
+        if _SCI_RE.match(token):
+            self._error(
+                "Scientific notation must use a normalized coefficient with 1 <= m < 10.",
+                code="invalid-number-scientific-notation",
+                line=line,
+                column=column,
+                category="lexical_error",
+            )
         if self.mode == "strict":
             self._error("Strict mode requires quoted string scalars.", code="strict-mode-unquoted-string", line=line, column=column, category="mode_restriction")
         first = token[0]

@@ -3,6 +3,7 @@ zero: 0
 hex: 0xFF01
 decimal: 0.5
 exponent: 1e6
+fractional-exponent: 1.5e2
 infinity: .inf
 negative-infinity: -.inf
 nan: .nan

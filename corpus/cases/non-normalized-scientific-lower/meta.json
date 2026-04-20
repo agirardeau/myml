@@ -1,0 +1,25 @@
+{
+  "summary": "Scientific notation rejects coefficients below one",
+  "tags": [
+    "number",
+    "scientific",
+    "lexical"
+  ],
+  "spec_refs": [
+    "grammar.number-forms",
+    "unsupported.invalid-numeric-form"
+  ],
+  "notes": "Scientific notation must use a normalized coefficient where `1 <= m < 10`.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "invalid-number-scientific-notation",
+        "category": "lexical_error",
+        "line": 1,
+        "column": 8
+      }
+    }
+  },
+  "emit_profiles": {}
+}

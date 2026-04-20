@@ -4,6 +4,7 @@
   "hex": 65281,
   "decimal": 0.5,
   "exponent": 1000000,
+  "fractional-exponent": 150,
   "infinity": ".inf",
   "negative-infinity": "-.inf",
   "nan": ".nan"
