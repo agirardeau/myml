@@ -47,8 +47,8 @@ future optional extras.
 ### Requirement: Default mode conforms to the Myml language definition
 
 In `default` mode, the library MUST accept exactly the Myml language described
-in `docs/lang.md` and MUST reject unsupported YAML features, invalid scalar
-forms, unsupported numeric separators, and non-normalized scientific notation.
+in `docs/lang.md` and MUST reject unsupported YAML features and invalid scalar
+forms.
 
 #### Scenario: Parser matches corpus expectations
 
