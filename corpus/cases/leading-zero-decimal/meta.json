@@ -1,0 +1,26 @@
+{
+  "summary": "Plain fractional decimals reject extra leading zeroes",
+  "tags": [
+    "number",
+    "decimal",
+    "leading-zero",
+    "lexical"
+  ],
+  "spec_refs": [
+    "grammar.number-forms",
+    "unsupported.invalid-numeric-form"
+  ],
+  "notes": "Only plain fractional decimals with exactly one `0.` prefix are supported.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "invalid-number-leading-zero-decimal",
+        "category": "lexical_error",
+        "line": 1,
+        "column": 8
+      }
+    }
+  },
+  "emit_profiles": {}
+}

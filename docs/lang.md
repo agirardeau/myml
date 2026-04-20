@@ -81,7 +81,8 @@ The following numeric forms are supported:
 * integer, for example `42`
 * hexadecimal integer in standard form, for example `0xFF01`
 * fixed-point decimal, for example `3.14` or `0.5`
-* exponential or scientific notation, for example `1e6`
+* exponential or scientific notation with a normalized coefficient, for example
+  `1e6` or `1.5e2`
 * `.inf`, `-.inf`, and `.nan`
 
 The following numeric restrictions apply:
@@ -94,9 +95,10 @@ The following numeric restrictions apply:
   nonzero values
 * leading `0` characters are not allowed except in:
   * the value `0`
-  * decimals beginning with `0.`
+  * plain fractional decimals beginning with exactly one `0.`
   * hexadecimal values beginning with `0x`
-* comma thousands separators are not allowed
+* scientific notation coefficients must satisfy `1 <= m < 10`
+* underscore digit separators are not allowed
 * octal notation is not supported
 
 In hexadecimal notation, `x` is lowercase. Hex digits may use uppercase or
