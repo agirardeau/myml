@@ -16,7 +16,7 @@ _EXP_RE = re.compile(r"^-?(?:[1-9](?:\.[0-9]+)?)e-?[0-9]+$")
 _NUMERIC_UNDERSCORE_RE = re.compile(r"^-?(?:0x[0-9A-Fa-f_]+|[0-9][0-9_]*(?:\.[0-9_]+)?(?:e-?[0-9_]+)?)$")
 _LEADING_ZERO_DECIMAL_RE = re.compile(r"^-?0[0-9]+\.[0-9]+$")
 _SCI_RE = re.compile(r"^-?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)e-?[0-9]+$")
-_UNICODE_KEY_RE = re.compile(r"^[\w][\w-]*$", re.UNICODE)
+_UNQUOTED_KEY_RE = re.compile(r"^[\w./$()~\-]+$", re.UNICODE)
 
 
 @dataclass
@@ -296,7 +296,7 @@ class Parser:
             self._error("`:` is not permitted within unquoted keys.", code="unquoted-key-colon", line=line, column=column)
         if not token:
             self._error("Mapping keys must be strings.", code="non-string-key", line=line, column=column)
-        if not _UNICODE_KEY_RE.match(token) or token.startswith("-"):
+        if not _UNQUOTED_KEY_RE.match(token):
             self._error("Unsupported unquoted key syntax.", code="invalid-key", line=line, column=column)
         return token
 
@@ -317,12 +317,6 @@ class Parser:
         if ambiguity is not None:
             code, message = ambiguity
             self._error(f"{message} is not permitted in y11safety mode.", code=code, line=line, column=column, category="mode_restriction")
-        if "#" in token:
-            self._error("`#` is not permitted within unquoted string scalars.", code="unquoted-hash", line=line, column=column, category="lexical_error")
-        if ":" in token:
-            self._error("`:` is not permitted within unquoted string scalars.", code="unquoted-colon", line=line, column=column, category="lexical_error")
-        if in_flow and "," in token:
-            self._error("Unquoted strings in flow containers may not contain commas.", code="flow-unquoted-comma", line=line, column=column, category="lexical_error")
         if token in {"true", "false"}:
             return ScalarNode(token == "true", kind="boolean", style="plain", raw=token)
         if token == "null":
@@ -373,11 +367,19 @@ class Parser:
                 column=column,
                 category="lexical_error",
             )
+        if "@" in token or "^" in token:
+            self._error("Unquoted string scalars may not contain `@` or `^`.", code="unquoted-string-invalid-char", line=line, column=column, category="lexical_error")
         if self.mode == "strict":
             self._error("Strict mode requires quoted string scalars.", code="strict-mode-unquoted-string", line=line, column=column, category="mode_restriction")
         first = token[0]
-        if first in "-!&*?{}[], |>%@'\"" or first == "":
+        if first in "!\"'`*%&>|,[]{}#":
             self._error("Unsupported unquoted string syntax.", code="invalid-string", line=line, column=column, category="lexical_error")
+        if first in "-?" and len(token) > 1 and token[1] == " ":
+            self._error("Unsupported unquoted string syntax.", code="invalid-string", line=line, column=column, category="lexical_error")
+        if token.endswith(":") or ": " in token:
+            self._error("`:` is not permitted at the end of or before a space in unquoted string scalars.", code="unquoted-colon", line=line, column=column, category="lexical_error")
+        if in_flow and any(c in token for c in ",[]{}"):
+            self._error("Unquoted strings in flow containers may not contain `,`, `[`, `]`, `{`, or `}`.", code="flow-unquoted-comma", line=line, column=column, category="lexical_error")
         return ScalarNode(token, kind="string", style="plain", raw=token)
 
     def _split_flow_items(self, text: str, line: int, column: int):
@@ -443,7 +445,7 @@ class Parser:
             if char in {'"', "'"}:
                 quote = char
                 continue
-            if char == "#":
+            if char == "#" and (index == 0 or text[index - 1] == " "):
                 return text[:index].rstrip(), text[index:]
         return text.rstrip(), None
 

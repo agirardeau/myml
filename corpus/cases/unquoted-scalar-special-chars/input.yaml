@@ -11,4 +11,8 @@ leading_semicolon: ;foo
 leading_less-than: <foo
 leading_backslash: /foo
 leading_tilde: ~foo
-leading_tilde: ~foo
+only_plus: +
+only_equals: =
+only_semicolon: ;
+only_less-than: <
+only_backslash: /

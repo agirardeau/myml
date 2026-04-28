@@ -5,3 +5,14 @@ semicolon: a;b
 less-than: a<b
 backslash: a\b
 tilde: a~b
+leading_plus: +foo
+leading_equals: =foo
+leading_semicolon: ;foo
+leading_less-than: <foo
+leading_backslash: /foo
+leading_tilde: ~foo
+only_plus: +
+only_equals: =
+only_semicolon: ;
+only_less-than: <
+only_backslash: /

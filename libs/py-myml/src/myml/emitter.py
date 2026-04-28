@@ -9,7 +9,7 @@ from .modes import is_special_float, validate_mode, yaml11_ambiguity
 from .nodes import DocumentNode, MappingEntry, MappingNode, Node, ScalarNode, SequenceItem, SequenceNode
 from .roundtrip import RoundTripMapping, RoundTripSequence, coerce_node
 
-_SAFE_KEY_RE = re.compile(r"^[^\W-][\w-]*$", re.UNICODE)
+_SAFE_KEY_RE = re.compile(r"^[\w./$()~\-]+$", re.UNICODE)
 
 
 def infer_scalar_kind(value: Any) -> str:
@@ -192,7 +192,7 @@ def _render_flow_sequence(node: SequenceNode, *, mode: str) -> str:
 
 
 def _render_key(key: str) -> str:
-    if _SAFE_KEY_RE.match(key) and not key.startswith("-"):
+    if _SAFE_KEY_RE.match(key):
         return key
     return json.dumps(key, ensure_ascii=False)
 
@@ -250,11 +250,19 @@ def _string_requires_quotes(text: str, *, mode: str, in_flow: bool) -> bool:
     if text == "":
         return True
     first = text[0]
-    if first in "-!&*?{}[], |>%@'\"":
+    if first in "!\"'`*%&>|,[]{}#":
         return True
-    if ":" in text or "#" in text:
+    if first in "-?" and len(text) > 1 and text[1] == " ":
         return True
-    if in_flow and "," in text:
+    if text == "~":
+        return True
+    if "@" in text or "^" in text:
+        return True
+    if text.endswith(":") or ": " in text:
+        return True
+    if text.startswith("#") or " #" in text:
+        return True
+    if in_flow and any(c in text for c in ",[]{}"):
         return True
     if text in {"true", "false", "null", ".inf", "-.inf", ".nan"}:
         return True
