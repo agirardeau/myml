@@ -1,18 +1,18 @@
 {
-  "summary": "YAML 1.1 Safety Mode rejects sexagesimal-looking strings",
+  "summary": "A colon mid-scalar is accepted when not the last character and not followed by a space",
   "tags": [
-    "y11safety",
-    "sexagesimal",
-    "mode"
+    "unquoted-string",
+    "colon"
   ],
   "spec_refs": [
-    "optional.yaml11-safety"
+    "grammar.unquoted-strings"
   ],
-  "notes": "The embedded colon is valid in default mode because it is not the last character and not followed by a space.",
+  "notes": "The colon in `a:b` is interior and not followed by a space, so the scalar is valid.",
   "parse_profiles": {
-    "default": {
+    "baseline": {
       "modes": [
-        "default"
+        "default",
+        "y11safety"
       ],
       "expect_node_graph": "expected_node_graph.json"
     },
@@ -22,17 +22,6 @@
       ],
       "expect_error": {
         "code": "strict-mode-unquoted-string",
-        "category": "mode_restriction",
-        "line": 1,
-        "column": 8
-      }
-    },
-    "y11safety": {
-      "modes": [
-        "y11safety"
-      ],
-      "expect_error": {
-        "code": "yaml11-safety-sexagesimal-like",
         "category": "mode_restriction",
         "line": 1,
         "column": 8

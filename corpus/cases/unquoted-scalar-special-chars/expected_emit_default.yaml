@@ -1,0 +1,7 @@
+dollar: $HOME
+plus: a+b
+equals: x=y
+semicolon: a;b
+less-than: a<b
+backslash: a\b
+tilde: a~b

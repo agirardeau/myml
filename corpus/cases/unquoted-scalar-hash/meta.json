@@ -1,18 +1,20 @@
 {
-  "summary": "YAML 1.1 Safety Mode rejects sexagesimal-looking strings",
+  "summary": "A hash mid-scalar is accepted when not the first character and not preceded by a space",
   "tags": [
-    "y11safety",
-    "sexagesimal",
-    "mode"
+    "unquoted-string",
+    "hash",
+    "comment"
   ],
   "spec_refs": [
-    "optional.yaml11-safety"
+    "grammar.unquoted-strings",
+    "grammar.comments"
   ],
-  "notes": "The embedded colon is valid in default mode because it is not the last character and not followed by a space.",
+  "notes": "The hash in `a#b` is interior and not preceded by a space, so it is part of the scalar rather than starting a comment.",
   "parse_profiles": {
-    "default": {
+    "baseline": {
       "modes": [
-        "default"
+        "default",
+        "y11safety"
       ],
       "expect_node_graph": "expected_node_graph.json"
     },
@@ -22,17 +24,6 @@
       ],
       "expect_error": {
         "code": "strict-mode-unquoted-string",
-        "category": "mode_restriction",
-        "line": 1,
-        "column": 8
-      }
-    },
-    "y11safety": {
-      "modes": [
-        "y11safety"
-      ],
-      "expect_error": {
-        "code": "yaml11-safety-sexagesimal-like",
         "category": "mode_restriction",
         "line": 1,
         "column": 8

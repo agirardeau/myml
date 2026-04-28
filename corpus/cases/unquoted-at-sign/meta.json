@@ -1,0 +1,23 @@
+{
+  "summary": "At-sign is not a permitted character in unquoted scalars",
+  "tags": [
+    "unquoted-string",
+    "lexical"
+  ],
+  "spec_refs": [
+    "grammar.unquoted-strings"
+  ],
+  "notes": "`@` does not appear in the permitted character set for unquoted scalars.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "unquoted-string-invalid-char",
+        "category": "lexical_error",
+        "line": 1,
+        "column": 8
+      }
+    }
+  },
+  "emit_profiles": {}
+}

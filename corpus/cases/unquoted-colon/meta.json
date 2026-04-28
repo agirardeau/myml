@@ -1,25 +1,41 @@
 {
-  "summary": "Unquoted strings containing a colon are rejected",
+  "summary": "A colon embedded mid-scalar is accepted; colon before space or at end remains invalid via YAML structure",
   "tags": [
     "unquoted-string",
-    "colon",
-    "lexical"
+    "colon"
   ],
   "spec_refs": [
-    "grammar.unquoted-strings",
-    "error-behavior.unquoted-colon"
+    "grammar.unquoted-strings"
   ],
-  "notes": "Keeps the failure focused on a plain scalar position.",
+  "notes": "A colon is permitted in an unquoted scalar when it is not the last character and not followed by a space.",
   "parse_profiles": {
-    "all": {
-      "modes": "all",
+    "baseline": {
+      "modes": [
+        "default",
+        "y11safety"
+      ],
+      "expect_node_graph": "expected_node_graph.json"
+    },
+    "strict": {
+      "modes": [
+        "strict"
+      ],
       "expect_error": {
-        "code": "unquoted-colon",
-        "category": "lexical_error",
+        "code": "strict-mode-unquoted-string",
+        "category": "mode_restriction",
         "line": 1,
         "column": 8
       }
     }
   },
-  "emit_profiles": {}
+  "emit_profiles": {
+    "default": {
+      "mode": "default",
+      "expect_output": "expected_emit_default.yaml"
+    },
+    "strict": {
+      "mode": "strict",
+      "expect_output": "expected_emit_strict.yaml"
+    }
+  }
 }

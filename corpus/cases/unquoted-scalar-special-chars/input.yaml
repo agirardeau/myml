@@ -1,0 +1,14 @@
+dollar: $HOME
+plus: a+b
+equals: x=y
+semicolon: a;b
+less-than: a<b
+backslash: a\b
+tilde: a~b
+leading_plus: +foo
+leading_equals: =foo
+leading_semicolon: ;foo
+leading_less-than: <foo
+leading_backslash: /foo
+leading_tilde: ~foo
+leading_tilde: ~foo

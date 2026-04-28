@@ -121,27 +121,20 @@ The null literal is:
 
 Unquoted keys may contain:
 
-* `a-zA-Z0-9_`
-* `-`, except as the first character
+* `a-zA-Z0-9_-./$()~`
 * Unicode letters
 
 Unquoted string scalars may contain:
 
-* `a-zA-Z0-9_`
-* `.,/()`
-* `-!&*?{}[], |>%@'"`
+* `a-zA-Z0-9_./()$+=;<\ `
+* ``!"'`*%&>|``, except as the first character
+* `,[]{}`, except as first character or in flow containers
+* `-?`, except as the first character if followed by a space character
+* `:`, except as the last character or followed by a space character
+* `#`, except as the first character or preceded by a space character
+* `~`, except as the only character
 * Unicode letters
-* emojis
-
-The following additional restrictions apply:
-
-* the first character of an unquoted string scalar may not be one of
-  `-!&*?{}[], |>%@'"`
-* `#` is not permitted within unquoted keys
-* `#` is not permitted within unquoted string scalars
-* `:` is not permitted within unquoted keys
-* `:` is not permitted within unquoted string scalars
-* unquoted string scalars in flow-style containers may not contain `,`
+* Emojis
 
 ## Scalar Resolution
 

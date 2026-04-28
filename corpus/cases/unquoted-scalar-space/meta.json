@@ -1,18 +1,17 @@
 {
-  "summary": "YAML 1.1 Safety Mode rejects sexagesimal-looking strings",
+  "summary": "Spaces are permitted within unquoted scalars",
   "tags": [
-    "y11safety",
-    "sexagesimal",
-    "mode"
+    "unquoted-string"
   ],
   "spec_refs": [
-    "optional.yaml11-safety"
+    "grammar.unquoted-strings"
   ],
-  "notes": "The embedded colon is valid in default mode because it is not the last character and not followed by a space.",
+  "notes": "The scalar `hello world` contains an interior space that is part of the string value.",
   "parse_profiles": {
-    "default": {
+    "baseline": {
       "modes": [
-        "default"
+        "default",
+        "y11safety"
       ],
       "expect_node_graph": "expected_node_graph.json"
     },
@@ -22,17 +21,6 @@
       ],
       "expect_error": {
         "code": "strict-mode-unquoted-string",
-        "category": "mode_restriction",
-        "line": 1,
-        "column": 8
-      }
-    },
-    "y11safety": {
-      "modes": [
-        "y11safety"
-      ],
-      "expect_error": {
-        "code": "yaml11-safety-sexagesimal-like",
         "category": "mode_restriction",
         "line": 1,
         "column": 8
