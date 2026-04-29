@@ -90,17 +90,22 @@ Each entry in `emit_profiles` is keyed by a contributor-chosen profile id and
 declares:
 
 * `mode`: the emitter mode to use
-* optional `options`: additional emit options
+* optional `options`: supported only for roundtrip emit profiles
 * optional `requires`: optional implementation capabilities needed for the
   profile to be relevant
 * exactly one of:
   * `expect_output`: references an `expected_emit_<profile>.yaml` fixture
   * `expect_error`: structured inline emit failure expectation
 
-The current corpus uses `options.roundtrip` for emit profiles that require
-roundtrip-preserving parsing before emission. Some roundtrip profiles also use
-`options.edits` to describe deterministic mutations applied to the roundtrip
-document before emission.
+Emit profiles without `options` are baseline profiles for their declared mode.
+The only supported non-baseline emit option is `options.roundtrip: true`, which
+marks a profile that must parse with `roundtrip=True` before re-emission. A
+roundtrip emit profile also declares `requires: ["roundtrip"]`.
+
+No other emit option keys or values are part of the checked-in corpus
+contract. If a future corpus need goes beyond baseline mode-based emission and
+roundtrip preservation, it should be introduced with an explicit spec change
+rather than ad hoc metadata.
 
 ## Profile Invariants
 

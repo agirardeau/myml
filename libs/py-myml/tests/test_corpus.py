@@ -52,15 +52,6 @@ def expand_modes(mode_spec):
     return list(mode_spec)
 
 
-def apply_edits(value, edits):
-    for edit in edits:
-        target = value
-        path = edit["path"]
-        for key in path[:-1]:
-            target = target[key]
-        target[path[-1]] = edit["value"]
-
-
 def profile_supported(profile):
     required = set(profile.get("requires", []))
     return required.issubset(SUPPORTED_OPTIONAL_FEATURES)
@@ -145,6 +136,23 @@ class CorpusTests(unittest.TestCase):
                 any(not profile.get("requires") for profile in emit_profiles.values()),
                 "Cases with a successful parse path must include a baseline emit profile with no requires.",
             )
+        for profile_id, profile in emit_profiles.items():
+            with self.subTest(emit_profile=profile_id, invariant="shape"):
+                options = profile.get("options")
+                if options is None:
+                    continue
+
+                self.assertIsInstance(options, dict, "Emit profile options must be an object when present.")
+                self.assertEqual(
+                    options,
+                    {"roundtrip": True},
+                    "Emit profile options only support {'roundtrip': True}.",
+                )
+                self.assertEqual(
+                    profile.get("requires"),
+                    ["roundtrip"],
+                    "Roundtrip emit profiles must declare requires=['roundtrip'].",
+                )
 
     def test_cases(self):
         cases_root = ROOT / "corpus" / "cases"
@@ -199,7 +207,6 @@ class CorpusTests(unittest.TestCase):
                             expected_output = (case_dir / profile["expect_output"]).read_text()
                             if options.get("roundtrip"):
                                 roundtrip_value = loads(source, mode=profile["mode"], roundtrip=True)
-                                apply_edits(roundtrip_value, options.get("edits", []))
                                 actual_output = dumps(roundtrip_value, mode=profile["mode"], roundtrip=True)
                             else:
                                 actual_output = dumps(semantic_value, mode=profile["mode"])
@@ -209,7 +216,6 @@ class CorpusTests(unittest.TestCase):
                             with self.assertRaises(MymlError) as raised:
                                 if options.get("roundtrip"):
                                     roundtrip_value = loads(source, mode=profile["mode"], roundtrip=True)
-                                    apply_edits(roundtrip_value, options.get("edits", []))
                                     dumps(roundtrip_value, mode=profile["mode"], roundtrip=True)
                                 else:
                                     dumps(semantic_value, mode=profile["mode"])

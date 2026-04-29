@@ -1,7 +1,5 @@
 # Spec: Conformance Corpus
-
 ## Requirements
-
 ### Requirement: Canonical Conformance Corpus
 
 - The repository contains a canonical conformance corpus for Myml.
@@ -48,15 +46,17 @@
 
 ### Requirement: Emit profiles express serialization expectations
 
-- Each case defines zero or more named emit profiles describing serializer behavior for the case's semantic graph.
-- A successful emit profile declares a top-level `mode`.
-- A successful emit profile may declare additional emit parameters under `options`.
-- A successful emit profile declares `expect_output` referencing an `expected_emit_{PROFILE}.yaml` file.
+- Each case defines zero or more named emit profiles for the case's semantic graph.
+- Every emit profile declares top-level `mode`.
+- A successful emit profile declares `expect_output` referencing `expected_emit_{PROFILE}.yaml`.
 - A successful emit profile does not declare `expect_error`.
-- A failed emit profile declares a top-level `mode`.
-- A failed emit profile may declare additional emit parameters under `options`.
 - A failed emit profile declares `expect_error` inline in `meta.json`.
 - A failed emit profile does not declare `expect_output`.
+- An emit profile without `options` is a baseline emit profile for its mode.
+- `options` is supported only for `roundtrip`.
+- A roundtrip emit profile declares `options.roundtrip: true`.
+- A roundtrip emit profile declares `requires: ["roundtrip"]`.
+- No other emit option keys or values are part of the corpus contract.
 
 ### Requirement: Optional feature gating is explicit
 
@@ -75,3 +75,4 @@
   - Comments and empty-line handling
   - Unsupported YAML features and other invalid inputs
   - Mode-specific behavior such as `strict` and `y11safety`
+

@@ -28,24 +28,6 @@
         "roundtrip"
       ],
       "expect_output": "expected_emit_roundtrip.yaml"
-    },
-    "roundtrip_edit_note": {
-      "mode": "default",
-      "options": {
-        "roundtrip": true,
-        "edits": [
-          {
-            "path": [
-              "note"
-            ],
-            "value": "updated text"
-          }
-        ]
-      },
-      "requires": [
-        "roundtrip"
-      ],
-      "expect_output": "expected_emit_roundtrip_edit_note.yaml"
     }
   },
   "notes": "Covers leading comments, blank lines, and trailing comments after a scalar.",
