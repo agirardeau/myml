@@ -34,7 +34,7 @@ corpus/
 Every case lives directly under `corpus/cases/<case-id>/`. There is no separate
 `valid/` or `invalid/` directory split. A case directory is the stable identity
 for one input document, and `meta.json` describes how that same input behaves in
-each supported parse mode and emit configuration.
+standard mode, strict mode, and each supported emit configuration.
 
 Case identifiers use kebab-case and remain stable once published. The case id is
 inferred from the directory name and is not duplicated inside `meta.json`.

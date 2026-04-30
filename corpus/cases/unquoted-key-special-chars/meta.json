@@ -15,9 +15,9 @@
     }
   },
   "emit_profiles": {
-    "default": {
-      "mode": "default",
-      "expect_output": "expected_emit_default.yaml"
+    "standard": {
+      "mode": "standard",
+      "expect_output": "expected_emit_standard.yaml"
     },
     "strict": {
       "mode": "strict",

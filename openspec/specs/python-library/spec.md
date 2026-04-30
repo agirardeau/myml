@@ -5,7 +5,7 @@
 ### Requirement: Library exposes a familiar Myml load and dump API
 
 - Expose `load`, `loads`, `dump`, and `dumps`.
-- Every entry point accepts `mode` with the values `default`, `strict`, and `y11safety`.
+- Every entry point accepts `mode` with the values `standard` and `strict`.
 - Every entry point accepts `roundtrip` to enable formatting-preserving behavior.
 - `loads` parses a Myml document string according to the selected mode.
 - `loads` returns plain Python values or roundtrip-aware values based on `roundtrip`.
@@ -19,19 +19,20 @@
 - Installing without extras is sufficient to import and use the parser and emitter.
 - Optional extras or accelerators do not change baseline support or the public API contract.
 
-### Requirement: Default mode conforms to the Myml language definition
+### Requirement: Standard mode conforms to the Myml language definition
 
-- `default` mode accepts exactly the Myml language described in `docs/lang.md`.
+- `standard` mode accepts exactly the Myml language described in `docs/lang.md`.
 - Unsupported YAML features are rejected.
 - Invalid scalar forms are rejected.
 - Parsing a document that is valid under `docs/lang.md` returns the corresponding Python representation graph.
 - Scalar resolution follows the order defined by the Myml language definition.
+- YAML 1.1-ambiguous plain scalars such as `yes`, `no`, `on`, `off`, ISO-like date/time values, octal-like forms, and sexagesimal-like forms are treated as strings unless they match a supported Myml scalar form.
 - Parser results and raised errors for applicable corpus cases match the checked-in expectations.
 - Corpus cases act as normative parser acceptance data for the library.
 
-### Requirement: Default emission follows Myml serialization defaults
+### Requirement: Standard emission follows Myml serialization defaults
 
-- In `default` mode, emitted documents follow the serialization defaults in `docs/lang.md` unless roundtrip preservation requires reusing existing source formatting.
+- In `standard` mode, emitted documents follow the serialization defaults in `docs/lang.md` unless roundtrip preservation requires reusing existing source formatting.
 - Emitting plain Python values writes UTF-8 Myml text using block-style containers.
 - Emitting plain Python values uses unquoted keys and unquoted string scalars whenever the language definition permits them.
 - Loading a document with `roundtrip=True` and dumping it without edits reproduces the original document exactly.
@@ -72,14 +73,6 @@
 - The strict-mode parse error states that quoted string scalars are required.
 - Emitting string values in `strict` mode serializes those scalars in quoted form.
 - Strict-mode output remains valid Myml.
-
-### Requirement: Compatibility mode protects against YAML 1.1 ambiguities
-
-- `y11safety` mode enforces the YAML 1.1 safety rules described in `docs/lang.md`.
-- Unquoted ambiguous scalars such as `yes`, `no`, `on`, `off`, ISO-like date/time values, and other YAML 1.1-ambiguous forms are rejected in `y11safety` mode.
-- Compatibility-mode parse errors identify the scalar as disallowed for that mode.
-- Emitting a string whose plain form would be ambiguous to a YAML 1.1 parser uses a quoted form or another Myml-safe representation.
-- Compatibility-mode output avoids YAML 1.1 ambiguity.
 
 ### Requirement: Corpus-driven verification covers library acceptance behavior
 

@@ -10,8 +10,7 @@
   "parse_profiles": {
     "baseline": {
       "modes": [
-        "default",
-        "y11safety"
+        "standard"
       ],
       "expect_node_graph": "expected_node_graph.json"
     },
@@ -28,9 +27,9 @@
     }
   },
   "emit_profiles": {
-    "default": {
-      "mode": "default",
-      "expect_output": "expected_emit_default.yaml"
+    "standard": {
+      "mode": "standard",
+      "expect_output": "expected_emit_standard.yaml"
     },
     "strict": {
       "mode": "strict",

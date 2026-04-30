@@ -5,7 +5,7 @@ import math
 import re
 from typing import Any
 
-from .modes import is_special_float, validate_mode, yaml11_ambiguity
+from .modes import is_special_float, validate_mode
 from .nodes import DocumentNode, MappingEntry, MappingNode, Node, ScalarNode, SequenceItem, SequenceNode
 from .roundtrip import RoundTripMapping, RoundTripSequence, coerce_node
 
@@ -24,7 +24,7 @@ def infer_scalar_kind(value: Any) -> str:
     return "string"
 
 
-def dump_to_text(value: Any, *, mode: str = "default") -> str:
+def dump_to_text(value: Any, *, mode: str = "standard") -> str:
     mode = validate_mode(mode)
     document = _as_document(value, mode=mode)
     if isinstance(value, (RoundTripMapping, RoundTripSequence)) and document.original_text and document.mode == mode and not document.dirty:
@@ -239,8 +239,6 @@ def _render_string(text: str, *, mode: str, in_flow: bool, style: str | None) ->
         return _quote_string(text)
     if mode == "strict":
         return _quote_string(text)
-    if mode == "y11safety" and yaml11_ambiguity(text) is not None:
-        return _quote_string(text)
     if _string_requires_quotes(text, mode=mode, in_flow=in_flow):
         return _quote_string(text)
     return text
@@ -273,8 +271,6 @@ def _string_requires_quotes(text: str, *, mode: str, in_flow: bool) -> bool:
     if re.match(r"^-?(?:0|[1-9][0-9]*)\.[0-9]+$", text):
         return True
     if re.match(r"^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?e-?[0-9]+$", text):
-        return True
-    if mode == "y11safety" and yaml11_ambiguity(text) is not None:
         return True
     return False
 

@@ -132,7 +132,7 @@ def wrap_node(node: Node, document: DocumentNode):
     raise TypeError(f"Unsupported node type: {type(node)!r}")
 
 
-def as_format_aware(value: Any, *, mode: str = "default"):
+def as_format_aware(value: Any, *, mode: str = "standard"):
     if isinstance(value, (RoundTripMapping, RoundTripSequence)):
         return value
     node = coerce_node(value)

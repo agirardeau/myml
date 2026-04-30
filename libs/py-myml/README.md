@@ -6,21 +6,20 @@ This package provides the reference Python implementation for Myml.
 
 The top-level API exposes:
 
-* `load(stream, *, mode="default", roundtrip=False)`
-* `loads(text, *, mode="default", roundtrip=False)`
-* `dump(value, stream, *, mode="default", roundtrip=False)`
-* `dumps(value, *, mode="default", roundtrip=False)`
+* `load(stream, *, mode="standard", roundtrip=False)`
+* `loads(text, *, mode="standard", roundtrip=False)`
+* `dump(value, stream, *, mode="standard", roundtrip=False)`
+* `dumps(value, *, mode="standard", roundtrip=False)`
 * `scalar(value, *, style="plain")`
 * `mapping(value=None, *, style="block")`
 * `sequence(value=None, *, style="block")`
 * `entry(value, *, before=None, eol_comment=None)`
-* `as_format_aware(value, *, mode="default")`
+* `as_format_aware(value, *, mode="standard")`
 
 The supported modes are:
 
-* `default`
+* `standard`
 * `strict`
-* `y11safety`
 
 The library has no required runtime dependencies. The language definition in
 `/home/andrew/truehome/repos/myml/wt1/docs/lang.md` and the OpenSpec artifacts

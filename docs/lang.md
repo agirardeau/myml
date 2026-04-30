@@ -14,9 +14,9 @@ supported by this specification are outside the language and result in errors.
 
 A Myml document represents a YAML 1.2 representation graph consisting of:
 
-* mapping nodes
-* sequence nodes
-* scalar nodes
+* Mapping nodes
+* Sequence nodes
+* Scalar nodes
 
 Mapping keys are strings.
 
@@ -24,13 +24,13 @@ Mapping keys are strings.
 
 A Myml document may contain:
 
-* block-style mappings
-* block-style sequences
-* flow-style mappings
-* flow-style sequences
-* comments
-* empty lines
-* scalar values
+* Block-style mappings
+* Block-style sequences
+* Flow-style mappings
+* Flow-style sequences
+* Comments
+* Empty lines
+* Scalar values
 
 Outside quoted scalars and block scalar strings, `#` begins a comment.
 
@@ -38,19 +38,19 @@ Outside quoted scalars and block scalar strings, `#` begins a comment.
 
 Scalar values are one of:
 
-* string
-* number
-* boolean
-* null
+* String
+* Number
+* Boolean
+* Null
 
 ### String Forms
 
 String forms are:
 
-* double-quoted string
-* single-quoted string
-* unquoted string
-* block scalar string introduced by `|` or `>`
+* Double-quoted string
+* Single-quoted string
+* Unquoted string
+* Block scalar string introduced by `|` or `>`
 
 Quoted scalars and block scalar strings are strings.
 
@@ -61,27 +61,27 @@ escaping rules.
 
 Block scalar strings are restricted as follows:
 
-* only `|` and `>` style indicators are supported
-* chomping indicators `+` and `-` are not supported
-* indentation indicators are not supported
-* otherwise, YAML 1.2 block scalar semantics are preserved
+* Only `|` and `>` style indicators are supported
+* Chomping indicators `+` and `-` are not supported
+* Indentation indicators are not supported
+* Otherwise, YAML 1.2 block scalar semantics are preserved
 
 ### Number Forms
 
 Number forms are:
 
-* integer
-* hexadecimal integer
-* fixed-point decimal
-* exponential notation
-* infinity and NaN literals
+* Integer
+* Hexadecimal integer
+* Fixed-point decimal
+* Exponential notation
+* Infinity and NaN literals
 
 The following numeric forms are supported:
 
-* integer, for example `42`
-* hexadecimal integer in standard form, for example `0xFF01`
-* fixed-point decimal, for example `3.14` or `0.5`
-* exponential notation with a normalized coefficient, for example
+* Integer, for example `42`
+* Hexadecimal integer in standard form, for example `0xFF01`
+* Fixed-point decimal, for example `3.14` or `0.5`
+* Exponential notation with a normalized coefficient, for example
   `1e6` or `1.5e2`
 * `.inf`, `-.inf`, and `.nan`
 
@@ -91,15 +91,15 @@ The following numeric restrictions apply:
 * `-0` is not valid
 * `.5` is not valid
 * `+` prefixes are not valid
-* a leading `-` is allowed only for non-hex numbers, non-`.nan` values, and
+* A leading `-` is allowed only for non-hex numbers, non-`.nan` values, and
   nonzero values
-* leading `0` characters are not allowed except:
-  * the value `0`
-  * plain fractional decimals beginning with exactly one `0.`
-  * hexadecimal values beginning with `0x`
-* scientific notation coefficients must satisfy `1 <= m < 10`
-* underscore digit separators are not allowed
-* octal notation is not supported
+* Leading `0` characters are not allowed except:
+  * The value `0`
+  * Plain fractional decimals beginning with exactly one `0.`
+  * Hexadecimal values beginning with `0x`
+* Scientific notation coefficients must satisfy `1 <= m < 10`
+* Underscore digit separators are not allowed
+* Octal notation is not supported
 
 In hexadecimal notation, `x` is lowercase. Hex digits may use uppercase or
 lowercase letters.
@@ -140,10 +140,10 @@ Unquoted string scalars may contain:
 
 Unquoted scalars are resolved in the following order:
 
-1. null
-2. boolean
-3. number
-4. string
+1. Null
+2. Boolean
+3. Number
+4. String
 
 Quoted scalars and block scalar strings always resolve as strings.
 
@@ -180,29 +180,29 @@ its parent entry.
 
 Flow-style mappings and flow-style sequences are restricted as follows:
 
-* a flow container appears on a single line
-* a flow container contains scalar values only
-* empty flow containers `[]` and `{}` are allowed
-* comments may follow a flow container
+* A flow container appears on a single line
+* A flow container contains scalar values only
+* Empty flow containers `[]` and `{}` are allowed
+* Comments may follow a flow container
 
 ## Unsupported YAML 1.2 Features
 
 YAML 1.2 constructs outside this specification result in errors. These include:
 
-* non-string keys
-* multiline strings other than block scalar strings introduced by `|` or `>`
-* anchors
-* tags
-* merge keys
-* tabs in indentation
-* indentation that does not satisfy the container rules in this specification
-* numeric scalars outside the supported forms described above
+* Non-string keys
+* Multiline strings other than block scalar strings introduced by `|` or `>`
+* Anchors
+* Tags
+* Merge keys
+* Tabs in indentation
+* Indentation that does not satisfy the container rules in this specification
+* Numeric scalars outside the supported forms described above
 * `true`, `false`, `null`, `.inf`, `-.inf`, and `.nan` written with any
   non-lowercase letters
-* null scalar `~`
-* mapping entries with no value
-* chomping indicators `+` and `-` on block scalar strings
-* indentation indicators on block scalar strings
+* Null scalar `~`
+* Mapping entries with no value
+* Chomping indicators `+` and `-` on block scalar strings
+* Indentation indicators on block scalar strings
 
 ## Error Behavior
 
@@ -210,38 +210,29 @@ Invalid input produces useful error messages.
 
 Useful error messages are produced for, at minimum:
 
-* malformed mappings
-* malformed sequences
-* duplicate keys within the same mapping
-* unquoted keys containing `:`
-* unquoted keys containing `#`
-* unquoted string scalars containing `:`
-* unquoted string scalars containing `#`
-* use of any unsupported YAML 1.2 feature
+* Malformed mappings
+* Malformed sequences
+* Duplicate keys within the same mapping
+* Unquoted keys containing disallowed characters
+* Unquoted string scalars containing disallowed characters or restricted
+  characters in disallowed forms (e.g. `:` followed by space)
+* Use of any unsupported YAML 1.2 feature
 
 ## Serialization Defaults
 
-The default serialized form uses:
+The standard serialized form uses:
 
 * UTF-8 encoding
-* block-style containers only
-* unquoted keys whenever possible
-* unquoted string scalars whenever possible
+* Block-style containers only
+* Unquoted keys whenever possible
+* Unquoted string scalars whenever possible
 
-## Optional Modes
+## Modes
+
+### Standard Mode
+
+Standard mode accepts the full Myml language defined in this specification.
 
 ### Strict Mode
 
-In strict mode, unquoted string scalars are not permitted.
-
-### YAML 1.1 Safety Mode
-
-In YAML 1.1 Safety Mode, unquoted strings that could be interpreted as special
-values by YAML 1.1 are not permitted.
-
-These include:
-
-* boolean scalars `yes`, `no`, `on`, `off`, `y`, and `n`, in any capitalization
-* date and time forms such as ISO 8601 values and `HH:MM:SS.ss`
-* octal numbers in `0123` form
-* sexagesimal numbers such as `13:22`
+Strict mode rejects all unquoted string scalars.

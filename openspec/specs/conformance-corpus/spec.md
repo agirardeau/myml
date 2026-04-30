@@ -74,5 +74,4 @@
   - Quoted, unquoted, and block scalar string behavior
   - Comments and empty-line handling
   - Unsupported YAML features and other invalid inputs
-  - Mode-specific behavior such as `strict` and `y11safety`
-
+  - Mode-specific behavior such as `standard` and `strict`

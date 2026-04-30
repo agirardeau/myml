@@ -5,7 +5,7 @@ import re
 from dataclasses import dataclass
 
 from .errors import ParseError
-from .modes import validate_mode, yaml11_ambiguity
+from .modes import validate_mode
 from .nodes import DocumentNode, MappingEntry, MappingNode, ScalarNode, SequenceItem, SequenceNode
 from .roundtrip import to_plain_data, wrap_node
 
@@ -26,7 +26,7 @@ class Line:
 
 
 class Parser:
-    def __init__(self, text: str, *, mode: str = "default", roundtrip: bool = False) -> None:
+    def __init__(self, text: str, *, mode: str = "standard", roundtrip: bool = False) -> None:
         self.text = text
         self.lines = [Line(index + 1, raw) for index, raw in enumerate(text.splitlines())]
         self.index = 0
@@ -313,10 +313,6 @@ class Parser:
         return ScalarNode(inner, kind="string", style="double", raw=token)
 
     def _parse_plain_scalar(self, token: str, line: int, column: int, *, in_flow: bool):
-        ambiguity = yaml11_ambiguity(token) if self.mode == "y11safety" else None
-        if ambiguity is not None:
-            code, message = ambiguity
-            self._error(f"{message} is not permitted in y11safety mode.", code=code, line=line, column=column, category="mode_restriction")
         if token in {"true", "false"}:
             return ScalarNode(token == "true", kind="boolean", style="plain", raw=token)
         if token == "null":
@@ -490,11 +486,11 @@ class Parser:
         raise ParseError(message, code=code, category=category, line=line, column=column)
 
 
-def parse_text(text: str, *, mode: str = "default", roundtrip: bool = False):
+def parse_text(text: str, *, mode: str = "standard", roundtrip: bool = False):
     parser = Parser(text, mode=mode, roundtrip=roundtrip)
     return parser.parse()
 
 
-def parse_document(text: str, *, mode: str = "default") -> DocumentNode:
+def parse_document(text: str, *, mode: str = "standard") -> DocumentNode:
     parser = Parser(text, mode=mode, roundtrip=False)
     return parser.parse_document()

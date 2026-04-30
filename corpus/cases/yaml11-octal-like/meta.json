@@ -1,18 +1,18 @@
 {
-  "summary": "YAML 1.1 Safety Mode rejects octal-looking strings",
+  "summary": "Standard mode treats octal-like numerals as strings",
   "tags": [
-    "y11safety",
+    "standard-mode",
     "octal",
     "mode"
   ],
   "spec_refs": [
-    "optional.yaml11-safety"
+    "optional.standard-mode"
   ],
-  "notes": "This value is also outside Myml numeric syntax in default mode, but the case is retained as a mode-specific corpus fixture.",
+  "notes": "This value is outside Myml numeric syntax, so standard mode treats it as a string.",
   "parse_profiles": {
-    "default": {
+    "standard": {
       "modes": [
-        "default"
+        "standard"
       ],
       "expect_node_graph": "expected_node_graph.json"
     },
@@ -26,31 +26,16 @@
         "line": 1,
         "column": 8
       }
-    },
-    "y11safety": {
-      "modes": [
-        "y11safety"
-      ],
-      "expect_error": {
-        "code": "yaml11-safety-octal-like",
-        "category": "mode_restriction",
-        "line": 1,
-        "column": 8
-      }
     }
   },
   "emit_profiles": {
-    "default": {
-      "mode": "default",
-      "expect_output": "expected_emit_default.yaml"
+    "standard": {
+      "mode": "standard",
+      "expect_output": "expected_emit_standard.yaml"
     },
     "strict": {
       "mode": "strict",
       "expect_output": "expected_emit_strict.yaml"
-    },
-    "y11safety": {
-      "mode": "y11safety",
-      "expect_output": "expected_emit_y11safety.yaml"
     }
   }
 }

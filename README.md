@@ -10,6 +10,11 @@ The reference Python implementation lives in
 verified against the checked-in corpus in
 [`corpus/`](/home/andrew/truehome/repos/myml/wt1/corpus).
 
+Standard mode treats YAML 1.1-ambiguous plain scalars such as `yes`, `no`,
+`on`, `off`, `y`, `n`, ISO-like date/time values, `0123`, and sexagesimal-like
+values such as `13:22` as strings unless they match a supported Myml scalar
+form.
+
 ## CI
 
 GitHub Actions runs the baseline Python validation workflow on every pull

@@ -12,8 +12,7 @@
   "parse_profiles": {
     "default_y11safety": {
       "modes": [
-        "default",
-        "y11safety"
+        "standard"
       ],
       "expect_error": {
         "code": "flow-non-scalar-element",

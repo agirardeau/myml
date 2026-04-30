@@ -2,30 +2,26 @@
   "summary": "Quoted strings can stay valid while covering YAML 1.1-ambiguous spellings",
   "tags": [
     "string",
-    "y11safety",
+    "standard-mode",
     "strict",
     "emit"
   ],
   "spec_refs": [
     "optional.strict-mode",
-    "optional.yaml11-safety",
+    "optional.standard-mode",
     "serialization-defaults"
   ],
   "emit_profiles": {
-    "default": {
-      "mode": "default",
-      "expect_output": "expected_emit_default.yaml"
+    "standard": {
+      "mode": "standard",
+      "expect_output": "expected_emit_standard.yaml"
     },
     "strict": {
       "mode": "strict",
       "expect_output": "expected_emit_strict.yaml"
     },
-    "y11safety": {
-      "mode": "y11safety",
-      "expect_output": "expected_emit_y11safety.yaml"
-    },
     "roundtrip": {
-      "mode": "default",
+      "mode": "standard",
       "options": {
         "roundtrip": true
       },
@@ -35,7 +31,7 @@
       "expect_output": "expected_emit_roundtrip.yaml"
     }
   },
-  "notes": "Default mode can emit these values plainly, while strict and y11safety must quote them.",
+  "notes": "Standard mode can emit these values plainly, while strict mode must quote them.",
   "parse_profiles": {
     "baseline": {
       "modes": "all",
