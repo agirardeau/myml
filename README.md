@@ -18,12 +18,9 @@ request and push. The workflow installs the package from
 the checked-in unit test suite with:
 
 ```bash
-python -m pip install -e libs/py-myml
-python -m unittest discover libs/py-myml/tests
+uv build libs/py-myml
+uv run python -m unittest discover libs/py-myml/tests
 ```
 
-If your local shell does not provide a `python` shim, use `python3` for the
-same commands.
-
-The CI matrix covers Python 3.11 and 3.12 so the project checks both the
-declared support floor and a newer CPython release.
+The CI matrix covers the lowest supported python version (3.11) and the two
+most recent stable versions.

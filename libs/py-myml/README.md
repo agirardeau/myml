@@ -27,6 +27,20 @@ The library has no required runtime dependencies. The language definition in
 under `/home/andrew/truehome/repos/myml/wt1/openspec/` are the source of truth
 for behavior.
 
+## Development
+
+Build distribution artifacts with `uv`:
+
+```bash
+uv build
+```
+
+Run the test suite against an editable checkout:
+
+```bash
+uv run --with-editable . python -m unittest discover tests
+```
+
 ## Format-Aware Editing
 
 `roundtrip=True` remains the way to load a document with formatting metadata
