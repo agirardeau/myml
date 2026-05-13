@@ -1,0 +1,38 @@
+{
+  "summary": "A right brace is rejected inside a flow unquoted scalar",
+  "tags": [
+    "unquoted-string",
+    "flow",
+    "lexical"
+  ],
+  "spec_refs": [
+    "grammar.unquoted-strings",
+    "grammar.flow-style"
+  ],
+  "notes": "Brace characters may appear inside block-style unquoted scalars but not inside unquoted scalar values in flow containers.",
+  "parse_profiles": {
+    "baseline": {
+      "modes": [
+        "standard"
+      ],
+      "expect_error": {
+        "code": "flow-unquoted-comma",
+        "category": "lexical_error",
+        "line": 1,
+        "column": 10
+      }
+    },
+    "strict": {
+      "modes": [
+        "strict"
+      ],
+      "expect_error": {
+        "code": "strict-mode-unquoted-string",
+        "category": "mode_restriction",
+        "line": 1,
+        "column": 10
+      }
+    }
+  },
+  "emit_profiles": {}
+}

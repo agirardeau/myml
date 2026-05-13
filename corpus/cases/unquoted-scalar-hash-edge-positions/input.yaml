@@ -1,0 +1,3 @@
+trailing_hash: a#
+hash_before_space: a# b
+hash_comment_spaced: a # world

@@ -1,0 +1,25 @@
+{
+  "summary": "A left brace cannot be the only unquoted scalar character",
+  "tags": [
+    "unquoted-string",
+    "flow",
+    "lexical"
+  ],
+  "spec_refs": [
+    "grammar.unquoted-strings",
+    "grammar.flow-style"
+  ],
+  "notes": "A leading `{` starts flow-mapping parsing and is rejected here because the container is not closed.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "malformed-mapping",
+        "category": "structural_error",
+        "line": 1,
+        "column": 8
+      }
+    }
+  },
+  "emit_profiles": {}
+}

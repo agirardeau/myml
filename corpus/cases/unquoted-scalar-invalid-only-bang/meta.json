@@ -1,0 +1,25 @@
+{
+  "summary": "A bang cannot be the only unquoted scalar character",
+  "tags": [
+    "unquoted-string",
+    "unsupported",
+    "tag"
+  ],
+  "spec_refs": [
+    "grammar.unquoted-strings",
+    "unsupported.tags"
+  ],
+  "notes": "A leading `!` is parsed as unsupported tag syntax rather than scalar content.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "unsupported-tag",
+        "category": "unsupported_feature",
+        "line": 1,
+        "column": 8
+      }
+    }
+  },
+  "emit_profiles": {}
+}

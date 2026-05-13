@@ -1,0 +1,26 @@
+{
+  "summary": "A hash-only comment with no scalar value is rejected",
+  "tags": [
+    "unquoted-string",
+    "hash",
+    "comment",
+    "lexical"
+  ],
+  "spec_refs": [
+    "grammar.unquoted-strings",
+    "grammar.comments"
+  ],
+  "notes": "A hash at the value boundary starts a comment, so the mapping entry has no scalar value.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "missing-value",
+        "category": "structural_error",
+        "line": 1,
+        "column": 7
+      }
+    }
+  },
+  "emit_profiles": {}
+}

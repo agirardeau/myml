@@ -1,0 +1,24 @@
+{
+  "summary": "A single quote cannot be the only unquoted scalar character",
+  "tags": [
+    "unquoted-string",
+    "quoted-string",
+    "lexical"
+  ],
+  "spec_refs": [
+    "grammar.unquoted-strings"
+  ],
+  "notes": "A leading single quote starts quoted-scalar parsing and is rejected when unterminated.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "malformed-string",
+        "category": "structural_error",
+        "line": 1,
+        "column": 8
+      }
+    }
+  },
+  "emit_profiles": {}
+}

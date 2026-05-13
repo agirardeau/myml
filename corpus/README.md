@@ -145,13 +145,18 @@ When adding a new case:
 
 1. Create a new stable case directory under `cases/<case-id>/`.
 2. Keep the input focused on one primary rule or a small related cluster.
-3. Add precise `spec_refs` to the case `meta.json`.
-4. Use `parse_profiles` to describe how the same input behaves across supported
+3. For invalid inputs, prefer one invalid form per case so the expected error
+   proves that exact form. Parsers usually report the first error they find, so
+   combining multiple invalid forms can leave later forms unexercised.
+4. Use a shared case-id prefix for related invalid lexical boundary cases, such
+   as `unquoted-scalar-invalid-<form>` for invalid unquoted-scalar characters.
+5. Add precise `spec_refs` to the case `meta.json`.
+6. Use `parse_profiles` to describe how the same input behaves across supported
    parse modes.
-5. Reuse one canonical `expected_node_graph.json` for all successful parse
+7. Reuse one canonical `expected_node_graph.json` for all successful parse
    profiles in the case.
-6. Keep structured parse and emit failure expectations inline in `meta.json`.
-7. Use `requires` only for optional capabilities, and ensure a baseline parse
+8. Keep structured parse and emit failure expectations inline in `meta.json`.
+9. Use `requires` only for optional capabilities, and ensure a baseline parse
    profile and baseline emit profile remain available without `requires` when
    the case has a successful parse path.
-8. Update `status.md` only if the overall coverage picture changes.
+10. Update `status.md` only if the overall coverage picture changes.

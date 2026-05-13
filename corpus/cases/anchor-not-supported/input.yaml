@@ -1,2 +1,1 @@
-a: &anchor 1
-b: *anchor
+value: &anchor 1

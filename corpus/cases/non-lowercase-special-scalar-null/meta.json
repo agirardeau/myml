@@ -1,0 +1,25 @@
+{
+  "summary": "A non-lowercase null spelling is rejected",
+  "tags": [
+    "null",
+    "case",
+    "unsupported"
+  ],
+  "spec_refs": [
+    "grammar.boolean-and-null-forms",
+    "unsupported.non-lowercase-special-values"
+  ],
+  "notes": "Covers `Null` as an unsupported spelling for the `null` literal.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "unsupported-non-lowercase-special-scalar",
+        "category": "unsupported_feature",
+        "line": 1,
+        "column": 8
+      }
+    }
+  },
+  "emit_profiles": {}
+}

@@ -1,0 +1,26 @@
+{
+  "summary": "A non-lowercase true boolean spelling is rejected",
+  "tags": [
+    "boolean",
+    "case",
+    "unsupported"
+  ],
+  "spec_refs": [
+    "grammar.number-forms",
+    "grammar.boolean-and-null-forms",
+    "unsupported.non-lowercase-special-values"
+  ],
+  "notes": "Covers `True` as an unsupported spelling for the `true` boolean literal.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "unsupported-non-lowercase-special-scalar",
+        "category": "unsupported_feature",
+        "line": 1,
+        "column": 8
+      }
+    }
+  },
+  "emit_profiles": {}
+}

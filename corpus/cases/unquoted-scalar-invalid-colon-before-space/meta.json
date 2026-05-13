@@ -1,0 +1,37 @@
+{
+  "summary": "A colon before a space is rejected in an unquoted scalar",
+  "tags": [
+    "unquoted-string",
+    "colon",
+    "lexical"
+  ],
+  "spec_refs": [
+    "grammar.unquoted-strings"
+  ],
+  "notes": "A colon is permitted inside an unquoted scalar only when it is not the last character and not followed by a space.",
+  "parse_profiles": {
+    "baseline": {
+      "modes": [
+        "standard"
+      ],
+      "expect_error": {
+        "code": "unquoted-colon",
+        "category": "lexical_error",
+        "line": 1,
+        "column": 8
+      }
+    },
+    "strict": {
+      "modes": [
+        "strict"
+      ],
+      "expect_error": {
+        "code": "strict-mode-unquoted-string",
+        "category": "mode_restriction",
+        "line": 1,
+        "column": 8
+      }
+    }
+  },
+  "emit_profiles": {}
+}

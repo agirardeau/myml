@@ -1,0 +1,26 @@
+{
+  "summary": "Malformed comma separation is rejected in a flow sequence",
+  "tags": [
+    "unquoted-string",
+    "flow",
+    "comma",
+    "lexical"
+  ],
+  "spec_refs": [
+    "grammar.unquoted-strings",
+    "grammar.flow-style"
+  ],
+  "notes": "A comma separates flow items, so this fixture covers the invalid empty item created by adjacent commas.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "malformed-flow",
+        "category": "structural_error",
+        "line": 1,
+        "column": 12
+      }
+    }
+  },
+  "emit_profiles": {}
+}

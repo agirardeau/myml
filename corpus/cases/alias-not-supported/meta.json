@@ -1,0 +1,23 @@
+{
+  "summary": "Aliases are rejected",
+  "tags": [
+    "unsupported",
+    "alias"
+  ],
+  "spec_refs": [
+    "unsupported.anchors"
+  ],
+  "notes": "Covers alias syntax in a scalar position.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "unsupported-anchor",
+        "category": "unsupported_feature",
+        "line": 1,
+        "column": 8
+      }
+    }
+  },
+  "emit_profiles": {}
+}

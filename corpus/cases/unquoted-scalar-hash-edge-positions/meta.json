@@ -1,0 +1,42 @@
+{
+  "summary": "Hash is scalar content unless it begins a comment boundary",
+  "tags": [
+    "unquoted-string",
+    "hash",
+    "comment"
+  ],
+  "spec_refs": [
+    "grammar.unquoted-strings",
+    "grammar.comments"
+  ],
+  "notes": "Covers trailing hash, hash followed by a space while still inside the scalar, and a spaced hash that starts a trailing comment.",
+  "parse_profiles": {
+    "baseline": {
+      "modes": [
+        "standard"
+      ],
+      "expect_node_graph": "expected_node_graph.json"
+    },
+    "strict": {
+      "modes": [
+        "strict"
+      ],
+      "expect_error": {
+        "code": "strict-mode-unquoted-string",
+        "category": "mode_restriction",
+        "line": 1,
+        "column": 16
+      }
+    }
+  },
+  "emit_profiles": {
+    "standard": {
+      "mode": "standard",
+      "expect_output": "expected_emit_standard.yaml"
+    },
+    "strict": {
+      "mode": "strict",
+      "expect_output": "expected_emit_strict.yaml"
+    }
+  }
+}

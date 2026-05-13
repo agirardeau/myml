@@ -32,7 +32,8 @@ A Myml document may contain:
 * Empty lines
 * Scalar values
 
-Outside quoted scalars and block scalar strings, `#` begins a comment.
+A `#` begins a comment when it appears outside string-scalar content; the
+unquoted string rules below define when `#` is scalar content.
 
 ### Scalar Categories
 

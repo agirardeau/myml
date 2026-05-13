@@ -1,0 +1,26 @@
+{
+  "summary": "A hash comment with no scalar value is rejected",
+  "tags": [
+    "unquoted-string",
+    "hash",
+    "comment",
+    "lexical"
+  ],
+  "spec_refs": [
+    "grammar.unquoted-strings",
+    "grammar.comments"
+  ],
+  "notes": "The hash is preceded by a space after the mapping separator, so it starts a comment and leaves the entry without a value.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "missing-value",
+        "category": "structural_error",
+        "line": 1,
+        "column": 7
+      }
+    }
+  },
+  "emit_profiles": {}
+}

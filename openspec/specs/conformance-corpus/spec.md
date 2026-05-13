@@ -75,3 +75,7 @@
   - Comments and empty-line handling
   - Unsupported YAML features and other invalid inputs
   - Mode-specific behavior such as `standard` and `strict`
+- Invalid language-boundary cases isolate one primary invalid form per input
+  document when practical, so a first-error parser still proves that exact
+  boundary.
+- Related invalid lexical boundary cases use a consistent case-id prefix.

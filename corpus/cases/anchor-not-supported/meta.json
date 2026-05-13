@@ -1,14 +1,13 @@
 {
-  "summary": "Anchors and aliases are rejected",
+  "summary": "Anchors are rejected",
   "tags": [
     "unsupported",
-    "anchor",
-    "alias"
+    "anchor"
   ],
   "spec_refs": [
     "unsupported.anchors"
   ],
-  "notes": "A parser may report the anchor or alias first; either reflects the same unsupported feature family.",
+  "notes": "Covers anchor syntax in a scalar position.",
   "parse_profiles": {
     "all": {
       "modes": "all",
@@ -16,7 +15,7 @@
         "code": "unsupported-anchor",
         "category": "unsupported_feature",
         "line": 1,
-        "column": 4
+        "column": 8
       }
     }
   },

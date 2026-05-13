@@ -1,0 +1,25 @@
+{
+  "summary": "A pipe-only value is rejected without block scalar content",
+  "tags": [
+    "unquoted-string",
+    "block-scalar",
+    "lexical"
+  ],
+  "spec_refs": [
+    "grammar.unquoted-strings",
+    "grammar.block-scalars"
+  ],
+  "notes": "A solo `|` starts literal block-scalar parsing and is rejected here because no indented content follows.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "missing-value",
+        "category": "structural_error",
+        "line": 1,
+        "column": 1
+      }
+    }
+  },
+  "emit_profiles": {}
+}

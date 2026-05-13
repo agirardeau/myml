@@ -1,0 +1,36 @@
+{
+  "summary": "A backtick cannot be the only unquoted scalar character",
+  "tags": [
+    "unquoted-string",
+    "lexical"
+  ],
+  "spec_refs": [
+    "grammar.unquoted-strings"
+  ],
+  "notes": "Backtick is permitted inside an unquoted scalar, but not as the first character.",
+  "parse_profiles": {
+    "baseline": {
+      "modes": [
+        "standard"
+      ],
+      "expect_error": {
+        "code": "invalid-string",
+        "category": "lexical_error",
+        "line": 1,
+        "column": 8
+      }
+    },
+    "strict": {
+      "modes": [
+        "strict"
+      ],
+      "expect_error": {
+        "code": "strict-mode-unquoted-string",
+        "category": "mode_restriction",
+        "line": 1,
+        "column": 8
+      }
+    }
+  },
+  "emit_profiles": {}
+}

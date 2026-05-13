@@ -1,12 +1,12 @@
 {
-  "summary": "Dollar, plus, equals, semicolon, less-than, backslash, and tilde are accepted in unquoted scalars",
+  "summary": "Permitted punctuation is accepted in valid unquoted scalar positions",
   "tags": [
     "unquoted-string"
   ],
   "spec_refs": [
     "grammar.unquoted-strings"
   ],
-  "notes": "Each value exercises one character from the set permitted anywhere within an unquoted scalar.",
+  "notes": "Each value exercises a permitted punctuation character in an allowed unquoted scalar position, including interior, trailing, leading, and only-character forms where the grammar permits them.",
   "parse_profiles": {
     "baseline": {
       "modes": [

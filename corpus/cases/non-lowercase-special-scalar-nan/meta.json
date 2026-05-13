@@ -1,0 +1,25 @@
+{
+  "summary": "A non-lowercase NaN spelling is rejected",
+  "tags": [
+    "number",
+    "case",
+    "unsupported"
+  ],
+  "spec_refs": [
+    "grammar.number-forms",
+    "unsupported.non-lowercase-special-values"
+  ],
+  "notes": "Covers `.NaN` as an unsupported spelling for the `.nan` literal.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "unsupported-non-lowercase-special-scalar",
+        "category": "unsupported_feature",
+        "line": 1,
+        "column": 8
+      }
+    }
+  },
+  "emit_profiles": {}
+}
