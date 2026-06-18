@@ -1,0 +1,7 @@
+[tool.poe.tasks.release-python]
+help = "Bump, verify, commit, and tag one Python library release."
+cmd = "scripts/release-python-lib $pkg $bump"
+args = [
+  { name = "pkg", positional = true, help = "Package directory name: py-myml or py-myml-tiny." },
+  { name = "bump", positional = true, help = "Version bump: major, minor, or patch." },
+]

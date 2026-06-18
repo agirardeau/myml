@@ -8,4 +8,5 @@ __pycache__/
 
 /untracked
 
+/libs/py-myml/dist/
 /libs/py-myml-tiny/dist/

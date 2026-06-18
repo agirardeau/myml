@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  echo "usage: scripts/release-python-lib <py-myml|py-myml-tiny> <major|minor|patch>" >&2
+}
+
+if [[ $# -ne 2 ]]; then
+  usage
+  exit 2
+fi
+
+pkg="$1"
+bump="$2"
+
+case "$bump" in
+  major|minor|patch) ;;
+  *)
+    echo "invalid bump: $bump" >&2
+    usage
+    exit 2
+    ;;
+esac
+
+case "$pkg" in
+  py-myml)
+    dir="libs/py-myml"
+    import_name="myml"
+    ;;
+  py-myml-tiny)
+    dir="libs/py-myml-tiny"
+    import_name="myml_tiny"
+    ;;
+  *)
+    echo "unknown package: $pkg" >&2
+    usage
+    exit 2
+    ;;
+esac
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo "tracked working tree is dirty; commit or stash tracked changes first" >&2
+  exit 1
+fi
+
+export UV_CACHE_DIR="${UV_CACHE_DIR:-${TMPDIR:-/tmp}/uv-cache}"
+
+uv version --project "$dir" --bump "$bump" --no-sync
+version="$(uv version --project "$dir" --short)"
+tag="${pkg}-v${version}"
+
+if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+  echo "tag already exists locally: $tag" >&2
+  exit 1
+fi
+
+if git remote get-url origin >/dev/null 2>&1; then
+  if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null 2>&1; then
+    echo "tag already exists on origin: $tag" >&2
+    exit 1
+  fi
+fi
+
+uv build "$dir" --clear
+
+wheel=("$dir"/dist/*.whl)
+if [[ ${#wheel[@]} -ne 1 ]]; then
+  echo "expected exactly one wheel in $dir/dist" >&2
+  exit 1
+fi
+
+uv run --isolated --no-project --with "${wheel[0]}" -- python -c "import ${import_name}"
+uv run --no-project python -m unittest discover "$dir/tests"
+
+git add "$dir/pyproject.toml"
+if [[ -f "$dir/uv.lock" ]]; then
+  git add "$dir/uv.lock"
+fi
+
+git commit -m "Release ${pkg} v${version}"
+git tag -a "$tag" -m "${pkg} v${version}"
+
+echo "created $tag"
+echo "push with:"
+echo "  git push origin HEAD $tag"

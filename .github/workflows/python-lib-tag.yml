@@ -1,0 +1,84 @@
+name: Python Library Tag
+
+on:
+  push:
+    tags:
+      - "py-myml-v*"
+      - "py-myml-tiny-v*"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Resolve tagged package
+        id: package
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          tag="${GITHUB_REF_NAME}"
+          case "$tag" in
+            py-myml-v*)
+              pkg="py-myml"
+              dir="libs/py-myml"
+              import_name="myml"
+              version="${tag#py-myml-v}"
+              ;;
+            py-myml-tiny-v*)
+              pkg="py-myml-tiny"
+              dir="libs/py-myml-tiny"
+              import_name="myml_tiny"
+              version="${tag#py-myml-tiny-v}"
+              ;;
+            *)
+              echo "unsupported tag: $tag" >&2
+              exit 2
+              ;;
+          esac
+
+          pyproject_version="$(uv version --project "$dir" --short)"
+          if [[ "$version" != "$pyproject_version" ]]; then
+            echo "tag $tag declares version $version, but $dir/pyproject.toml declares $pyproject_version" >&2
+            exit 1
+          fi
+
+          {
+            echo "pkg=$pkg"
+            echo "dir=$dir"
+            echo "import_name=$import_name"
+            echo "version=$version"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build package
+        run: uv build "${{ steps.package.outputs.dir }}" --clear
+
+      - name: Smoke-test wheel
+        shell: bash
+        run: |
+          set -euo pipefail
+          wheel=("${{ steps.package.outputs.dir }}"/dist/*.whl)
+          if [[ ${#wheel[@]} -ne 1 ]]; then
+            echo "expected exactly one wheel in ${{ steps.package.outputs.dir }}/dist" >&2
+            exit 1
+          fi
+          uv run --isolated --no-project --with "${wheel[0]}" -- python -c "import ${{ steps.package.outputs.import_name }}"
+
+      - name: Run test suite
+        run: uv run --no-project python -m unittest discover "${{ steps.package.outputs.dir }}/tests"
