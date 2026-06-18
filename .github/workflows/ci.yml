@@ -34,3 +34,30 @@ jobs:
 
       - name: Run test suite
         run: uv run python -m unittest discover libs/py-myml/tests
+
+  py-myml-tiny:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.13", "3.14"]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Build package
+        run: uv build libs/py-myml-tiny
+
+      - name: Run test suite
+        run: uv run python -m unittest discover libs/py-myml-tiny/tests
