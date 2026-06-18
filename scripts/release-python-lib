@@ -85,4 +85,6 @@ git tag -a "$tag" -m "${pkg} v${version}"
 
 echo "created $tag"
 echo "push with:"
-echo "  git push origin HEAD $tag"
+#echo "  git push origin HEAD $tag"
+echo "  git push"
+echo "  git push origin $tag"
