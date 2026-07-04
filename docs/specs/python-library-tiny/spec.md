@@ -6,9 +6,11 @@
 
 - The repository contains a Python library at `libs/py-myml-tiny`.
 - The tiny library exposes `load` and `loads` for reading Myml.
+- The tiny library's public interface matches the `py-myml` public interface exactly for the supported read-only subset.
 - The tiny library parses Myml document strings and text streams into plain Python values.
 - The tiny library supports the `standard` and `strict` parser modes.
 - The tiny library exposes caller-facing `MymlError`, `ParseError`, and `ModeError` error classes.
+- When `py-myml` defines library-specific error types for behavior in the supported subset, the tiny library defines parallel caller-facing error types with matching constructor and attribute behavior.
 - The tiny library does not expose `dump`, `dumps`, roundtrip metadata, formatting-aware editing APIs, or any other emitter API.
 
 ### Requirement: Tiny library is dependency-free at runtime

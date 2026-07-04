@@ -56,11 +56,12 @@ class Line:
     text: str
 
 
-def load(stream: TextIO, *, mode: str = "standard"):
-    return loads(stream.read(), mode=mode)
+def load(stream: TextIO, *, mode: str = "standard", roundtrip: bool = False):
+    return loads(stream.read(), mode=mode, roundtrip=roundtrip)
 
 
-def loads(text: str, *, mode: str = "standard"):
+def loads(text: str, *, mode: str = "standard", roundtrip: bool = False):
+    _ = roundtrip
     return Parser(text, mode=mode).parse()
 
 
@@ -501,7 +502,6 @@ __all__ = [
     "ModeError",
     "MymlError",
     "ParseError",
-    "VALID_MODES",
     "load",
     "loads",
 ]
