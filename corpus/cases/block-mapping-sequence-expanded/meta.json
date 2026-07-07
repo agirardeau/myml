@@ -1,10 +1,11 @@
 {
-  "summary": "Block mapping with nested sequence and nested mappings",
+  "summary": "Expanded block mappings within a block sequence",
   "tags": [
     "block",
     "mapping",
     "sequence",
-    "nesting"
+    "nesting",
+    "expanded"
   ],
   "spec_refs": [
     "grammar.block-style-mappings",
@@ -22,24 +23,11 @@
       "expect_output": "expected_emit_strict.yaml"
     }
   },
-  "notes": "Exercises compact block mappings within a block sequence, including continuation entries after the first key.",
+  "notes": "Exercises expanded block mappings within a block sequence while requiring compact canonical emitter output.",
   "parse_profiles": {
     "baseline": {
-      "modes": [
-        "standard"
-      ],
+      "modes": "all",
       "expect_node_graph": "expected_node_graph.json"
-    },
-    "strict": {
-      "modes": [
-        "strict"
-      ],
-      "expect_error": {
-        "code": "strict-mode-unquoted-string",
-        "category": "mode_restriction",
-        "line": 2,
-        "column": 10
-      }
     }
   }
 }

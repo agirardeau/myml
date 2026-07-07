@@ -3,8 +3,11 @@ root:
   enabled: true
   count: 3
   items:
-    - name: "one"
+    -
+      name: "one"
       active: true
-    - name: "two"
+    -
+      name: "two"
       active: false
-    - name: "three"
+    -
+      name: "three"

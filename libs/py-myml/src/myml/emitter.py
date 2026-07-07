@@ -152,6 +152,21 @@ def _render_sequence(node: SequenceNode, *, indent: int, mode: str, roundtrip: b
                 line = f"{line} {item.inline_comment}"
             lines.append(line)
             continue
+        if isinstance(value, MappingNode):
+            rendered = _render_mapping(
+                value,
+                indent=indent + 2,
+                mode=mode,
+                roundtrip=roundtrip,
+                in_sequence=True,
+            )
+            first_content = len(value.entries[0].before) if value.entries else None
+            if first_content is not None:
+                rendered[first_content] = f"{prefix} {rendered[first_content][indent + 2:]}"
+                if item.inline_comment:
+                    rendered[first_content] = f"{rendered[first_content]} {item.inline_comment}"
+                lines.extend(rendered)
+                continue
         if isinstance(value, SequenceNode) and value.style == "flow" and roundtrip:
             line = f"{prefix} {_render_flow_sequence(value, mode=mode)}"
             if item.inline_comment:

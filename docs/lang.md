@@ -225,6 +225,8 @@ The standard serialized form uses:
 
 * UTF-8 encoding
 * Block-style containers only
+* Compact block mappings within sequences, with the first mapping entry on the
+  same line as the `-` sequence marker
 * Unquoted keys whenever possible
 * Unquoted string scalars whenever possible
 

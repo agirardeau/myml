@@ -1,7 +1,10 @@
 root:
   title: Example
   enabled: true
-  count: 2
+  count: 3
   items:
     - name: one
+      active: true
     - name: two
+      active: false
+    - name: three

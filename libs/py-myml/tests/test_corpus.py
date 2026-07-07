@@ -211,6 +211,8 @@ class CorpusTests(unittest.TestCase):
                             else:
                                 actual_output = dumps(semantic_value, mode=profile["mode"])
                             self.assertEqual(actual_output, expected_output)
+                            reparsed = loads(actual_output, mode=profile["mode"])
+                            self.assertEqual(normalize(reparsed), expected_node_graph)
                         else:
                             expected_error = profile["expect_error"]
                             with self.assertRaises(MymlError) as raised:

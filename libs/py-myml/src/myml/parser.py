@@ -78,7 +78,7 @@ class Parser:
             self._error("Invalid indentation.", code="invalid-indentation", line=line.number, column=actual + 1)
         stripped = line.text[indent:]
         body, _comment = self._split_comment(stripped)
-        if body.startswith("- "):
+        if body == "-" or body.startswith("- "):
             return self._parse_sequence(indent)
         if self._find_mapping_separator(body) is not None:
             return self._parse_mapping(indent)
@@ -112,7 +112,7 @@ class Parser:
             if actual > indent:
                 self._error("Invalid indentation.", code="invalid-indentation", line=line.number, column=actual + 1)
             raw = line.text[indent:]
-            if raw.startswith("- "):
+            if raw == "-" or raw.startswith("- "):
                 self._error("Sequence item is not valid in a mapping position.", code="malformed-mapping", line=line.number, column=indent + 1)
             body, comment = self._split_comment(raw)
             separator = self._find_mapping_separator(body)
@@ -156,9 +156,9 @@ class Parser:
             if actual > indent:
                 self._error("Invalid indentation.", code="invalid-indentation", line=line.number, column=actual + 1)
             raw = line.text[indent:]
-            if not raw.startswith("- "):
+            if raw != "-" and not raw.startswith("- "):
                 break
-            item_body, comment = self._split_comment(raw[2:])
+            item_body, comment = self._split_comment(raw[1:].lstrip())
             token = item_body.strip()
             self.index += 1
             if not token:
@@ -172,6 +172,22 @@ class Parser:
                 inline_map_separator = self._find_mapping_separator(token)
                 if inline_map_separator is not None and not token.startswith("{"):
                     value = self._parse_inline_mapping(token, line.number, indent + 3)
+                    continuation_indent = self._peek_significant_indent()
+                    if continuation_indent > indent:
+                        continuation = self._parse_mapping(continuation_indent)
+                        existing_keys = {entry.key for entry in value.entries}
+                        for entry in continuation.entries:
+                            if entry.key in existing_keys:
+                                self._error(
+                                    "Duplicate mapping key.",
+                                    code="duplicate-key",
+                                    line=line.number,
+                                    column=indent + 3,
+                                    category="semantic_error",
+                                )
+                            existing_keys.add(entry.key)
+                        value.entries.extend(continuation.entries)
+                        value.trailing_lines = continuation.trailing_lines
                 else:
                     value = self._parse_inline_value(token, line.number, indent + 3, in_flow=False)
             items.append(SequenceItem(value=value, before=pending_before, inline_comment=comment))
