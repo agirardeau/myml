@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "myml-tiny"
-version = "0.2.0"
+version = "0.2.1"
 description = "Tiny pure-Python reader for the Myml language"
 readme = "README.md"
 requires-python = ">=3.11"
