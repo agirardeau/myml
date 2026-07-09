@@ -1,0 +1,25 @@
+{
+  "summary": "Multiline unquoted scalar continuations are rejected",
+  "tags": [
+    "unsupported",
+    "unquoted-string",
+    "multiline"
+  ],
+  "spec_refs": [
+    "unsupported.multiline-strings",
+    "grammar.unquoted-strings"
+  ],
+  "notes": "The second line is a YAML plain-scalar continuation, but Myml only supports multiline strings through `|` and `>` block scalars.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "unsupported-multiline-scalar",
+        "category": "unsupported_feature",
+        "line": 2,
+        "column": 3
+      }
+    }
+  },
+  "emit_profiles": {}
+}

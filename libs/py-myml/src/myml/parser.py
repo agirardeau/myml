@@ -90,12 +90,30 @@ class Parser:
         token = body.strip()
         if not token:
             self._error("Expected a scalar value.", code="missing-value", line=line.number, column=indent + 1)
+        if self.index + 1 < len(self.lines):
+            next_line = self.lines[self.index + 1]
+            if self._indentation(next_line) > indent:
+                self._error_if_multiline_scalar_continuation(next_line, indent)
         node = self._parse_inline_value(token, line.number, indent + body.index(token) + 1, in_flow=False)
         self.index += 1
         if comment:
             if isinstance(node, ScalarNode):
                 node.raw = token
         return node
+
+    def _error_if_multiline_scalar_continuation(self, line: Line, parent_indent: int) -> None:
+        actual = self._indentation(line)
+        raw = line.text[parent_indent:]
+        body, _comment = self._split_comment(raw)
+        text = body.strip()
+        if actual > parent_indent and text and not text.startswith("- ") and self._find_mapping_separator(body) is None:
+            self._error(
+                "Multiline non-block scalar strings are not supported.",
+                code="unsupported-multiline-scalar",
+                line=line.number,
+                column=actual + 1,
+                category="unsupported_feature",
+            )
 
     def _parse_mapping(self, indent: int):
         entries: list[MappingEntry] = []
@@ -110,6 +128,7 @@ class Parser:
             if actual < indent:
                 break
             if actual > indent:
+                self._error_if_multiline_scalar_continuation(line, indent)
                 self._error("Invalid indentation.", code="invalid-indentation", line=line.number, column=actual + 1)
             raw = line.text[indent:]
             if raw == "-" or raw.startswith("- "):
@@ -136,6 +155,10 @@ class Parser:
                 value = self._parse_block(self._peek_significant_indent())
             else:
                 start_column = indent + separator + 2 + (len(body[separator + 1 :]) - len(body[separator + 1 :].lstrip()))
+                if self.index < len(self.lines):
+                    next_line = self.lines[self.index]
+                    if self._indentation(next_line) > indent:
+                        self._error_if_multiline_scalar_continuation(next_line, indent)
                 value = self._parse_inline_value(value_text, line.number, start_column, in_flow=False)
             entries.append(MappingEntry(key=key, value=value, before=pending_before, inline_comment=inline_comment))
             pending_before = []
@@ -154,6 +177,7 @@ class Parser:
             if actual < indent:
                 break
             if actual > indent:
+                self._error_if_multiline_scalar_continuation(line, indent)
                 self._error("Invalid indentation.", code="invalid-indentation", line=line.number, column=actual + 1)
             raw = line.text[indent:]
             if raw != "-" and not raw.startswith("- "):
@@ -189,6 +213,10 @@ class Parser:
                         value.entries.extend(continuation.entries)
                         value.trailing_lines = continuation.trailing_lines
                 else:
+                    if self.index < len(self.lines):
+                        next_line = self.lines[self.index]
+                        if self._indentation(next_line) > indent:
+                            self._error_if_multiline_scalar_continuation(next_line, indent)
                     value = self._parse_inline_value(token, line.number, indent + 3, in_flow=False)
             items.append(SequenceItem(value=value, before=pending_before, inline_comment=comment))
             pending_before = []
