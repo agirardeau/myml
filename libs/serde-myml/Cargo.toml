@@ -1,0 +1,12 @@
+[package]
+name = "serde-myml"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Serde parser and emitter for Myml"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+yaml-rust2 = "0.10"
+serde-value = "0.7"
+serde_json = "1"
