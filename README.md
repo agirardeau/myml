@@ -1,31 +1,30 @@
 # Minimal Yaml - The Yaml Subset That Doesn't Suck
 
-The language definition lives in
-[`docs/lang.md`](/home/andrew/truehome/repos/myml/wt1/docs/lang.md) and the
-active OpenSpec artifacts live under
-[`openspec/`](/home/andrew/truehome/repos/myml/wt1/openspec).
+The language definition lives in [`docs/lang.md`](docs/lang.md), and the
+specifications live under [`docs/specs/`](docs/specs/).
 
-The reference Python implementation lives in
-[`libs/py-myml`](/home/andrew/truehome/repos/myml/wt1/libs/py-myml) and is
-verified against the checked-in corpus in
-[`corpus/`](/home/andrew/truehome/repos/myml/wt1/corpus).
+The reference Python implementation lives in [`libs/py-myml`](libs/py-myml)
+and is verified against the checked-in corpus in [`corpus/`](corpus/).
 
 Standard mode treats YAML 1.1-ambiguous plain scalars such as `yes`, `no`,
 `on`, `off`, `y`, `n`, ISO-like date/time values, `0123`, and sexagesimal-like
 values such as `13:22` as strings unless they match a supported Myml scalar
 form.
 
-## CI
+## Development
 
-GitHub Actions runs the baseline Python validation workflow on every pull
-request and push. The workflow installs the package from
-[`libs/py-myml`](/home/andrew/truehome/repos/myml/wt1/libs/py-myml) and runs
-the checked-in unit test suite with:
+Requires `just`.
 
 ```bash
-uv build libs/py-myml
-uv run python -m unittest discover libs/py-myml/tests
+# Test
+just test-py-myml
+just test-py-myml-tiny
+just test-serde-myml
+
+# Release
+just release-python py-myml major|minor|patch
+just release-python py-myml-tiny major|minor|patch
+just release-rust major|minor|patch
 ```
 
-The CI matrix covers the lowest supported python version (3.11) and the two
-most recent stable versions.
+Release commands require a clean working tree. They verify the library, create a release commit, and an annotated version tag; push the commit and the tag named in the script's output afterward.

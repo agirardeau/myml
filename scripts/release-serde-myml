@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -ne 1 || ! "$1" =~ ^(major|minor|patch)$ ]]; then
+  echo "usage: scripts/release-serde-myml <major|minor|patch>" >&2
+  exit 2
+fi
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo "tracked working tree is dirty; commit or stash tracked changes first" >&2
+  exit 1
+fi
+
+manifest="libs/serde-myml/Cargo.toml"
+current="$(python3 - "$manifest" <<'PY'
+import sys
+import tomllib
+with open(sys.argv[1], 'rb') as source:
+    print(tomllib.load(source)['package']['version'])
+PY
+)"
+
+if [[ ! "$current" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+  echo "expected a simple major.minor.patch version, got: $current" >&2
+  exit 1
+fi
+
+major="${BASH_REMATCH[1]}"
+minor="${BASH_REMATCH[2]}"
+patch="${BASH_REMATCH[3]}"
+case "$1" in
+  major) version="$((major + 1)).0.0" ;;
+  minor) version="$major.$((minor + 1)).0" ;;
+  patch) version="$major.$minor.$((patch + 1))" ;;
+esac
+tag="serde-myml-v$version"
+
+if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+  echo "tag already exists locally: $tag" >&2
+  exit 1
+fi
+
+if git remote get-url origin >/dev/null 2>&1; then
+  if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null 2>&1; then
+    echo "tag already exists on origin: $tag" >&2
+    exit 1
+  else
+    status=$?
+    if [[ $status -ne 2 ]]; then
+      echo "could not check for $tag on origin" >&2
+      exit 1
+    fi
+  fi
+fi
+
+python3 - "$manifest" "$current" "$version" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+current, version = sys.argv[2:]
+source = path.read_text()
+updated, count = re.subn(
+    rf'(?m)^version = "{re.escape(current)}"$',
+    f'version = "{version}"',
+    source,
+    count=1,
+)
+if count != 1:
+    raise SystemExit(f'could not update package version in {path}')
+path.write_text(updated)
+PY
+
+# Refresh the root package entry in Cargo.lock before the locked checks.
+cargo check --manifest-path "$manifest"
+cargo fmt --manifest-path "$manifest" --all -- --check
+cargo test --manifest-path "$manifest" --locked --all-targets
+cargo package --manifest-path "$manifest" --locked --allow-dirty
+
+git add "$manifest" libs/serde-myml/Cargo.lock
+git commit -m "Release serde-myml v$version"
+git tag -a "$tag" -m "serde-myml v$version"
+
+echo "created $tag"
+echo "push with:"
+echo "  git push"
+echo "  git push origin $tag"

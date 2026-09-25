@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 license = "MIT"
 description = "Serde parser and emitter for Myml"
+repository = "https://github.com/agirardeau/myml"
+readme = "README.md"
+exclude = ["tests/corpus.rs"]
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
