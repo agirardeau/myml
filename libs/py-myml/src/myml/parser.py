@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import codecs
 import re
 from dataclasses import dataclass
 
@@ -347,14 +346,51 @@ class Parser:
     def _parse_quoted_scalar(self, token: str, line: int, column: int):
         if len(token) < 2 or token[-1] != token[0]:
             self._error("Quoted scalar is not terminated.", code="malformed-string", line=line, column=column)
-        if token[0] == "'":
-            inner = token[1:-1].replace("''", "'")
-            return ScalarNode(inner, kind="string", style="single", raw=token)
-        try:
-            inner = codecs.decode(token[1:-1], "unicode_escape")
-        except Exception as exc:  # pragma: no cover - defensive
-            self._error(str(exc), code="malformed-string", line=line, column=column)
-        return ScalarNode(inner, kind="string", style="double", raw=token)
+        quote = token[0]
+        result: list[str] = []
+        index = 1
+        while index < len(token) - 1:
+            char = token[index]
+            if quote == "'":
+                if char == "'":
+                    if index + 1 >= len(token) - 1 or token[index + 1] != "'":
+                        self._error("Apostrophes within single quotes must be doubled.", code="malformed-string", line=line, column=column)
+                    result.append("'")
+                    index += 2
+                    continue
+            elif char == '"':
+                self._error("Unescaped quote within double quotes.", code="malformed-string", line=line, column=column)
+            elif char == "\\":
+                index += 1
+                if index >= len(token) - 1:
+                    self._error("Quoted scalar is not terminated.", code="malformed-string", line=line, column=column)
+                escape = token[index]
+                escapes = {
+                    "0": "\0", "a": "\a", "b": "\b", "t": "\t", "n": "\n",
+                    "v": "\v", "f": "\f", "r": "\r", "e": "\x1b", " ": " ",
+                    '"': '"', "/": "/", "\\": "\\", "N": "\x85",
+                    "_": "\xa0", "L": "\u2028", "P": "\u2029",
+                }
+                if escape in escapes:
+                    result.append(escapes[escape])
+                elif escape in "xuU":
+                    width = {"x": 2, "u": 4, "U": 8}[escape]
+                    digits = token[index + 1:index + 1 + width]
+                    if len(digits) != width or any(digit not in "0123456789abcdefABCDEF" for digit in digits):
+                        self._error("Invalid Unicode escape.", code="malformed-string", line=line, column=column)
+                    point = int(digits, 16)
+                    if point > 0x10ffff or 0xd800 <= point <= 0xdfff:
+                        self._error("Invalid Unicode code point.", code="malformed-string", line=line, column=column)
+                    result.append(chr(point))
+                    index += width
+                else:
+                    self._error("Unknown escape sequence.", code="malformed-string", line=line, column=column)
+                index += 1
+                continue
+            result.append(char)
+            index += 1
+        value = "".join(result)
+        return ScalarNode(value, kind="string", style="single" if quote == "'" else "double", raw=token)
 
     def _parse_plain_scalar(self, token: str, line: int, column: int, *, in_flow: bool):
         if token in {"true", "false"}:
@@ -427,13 +463,30 @@ class Parser:
         start = 0
         part_column = column
         quote: str | None = None
+        escaped = False
+        single_quote_end = False
         for index, char in enumerate(text):
             if quote:
-                if char == quote:
+                if quote == '"':
+                    if escaped:
+                        escaped = False
+                        continue
+                    if char == "\\":
+                        escaped = True
+                        continue
+                elif single_quote_end:
+                    single_quote_end = False
+                    if char == "'":
+                        continue
                     quote = None
-                elif char == "\\" and quote == '"':
+                if quote and char == quote:
+                    if quote == "'":
+                        single_quote_end = True
+                    else:
+                        quote = None
                     continue
-                continue
+                if quote:
+                    continue
             if char in {'"', "'"}:
                 quote = char
                 continue
@@ -452,14 +505,31 @@ class Parser:
 
     def _find_mapping_separator(self, text: str) -> int | None:
         quote: str | None = None
+        escaped = False
+        single_quote_end = False
         depth = 0
         for index, char in enumerate(text):
             if quote:
-                if char == quote:
+                if quote == '"':
+                    if escaped:
+                        escaped = False
+                        continue
+                    if char == "\\":
+                        escaped = True
+                        continue
+                elif single_quote_end:
+                    single_quote_end = False
+                    if char == "'":
+                        continue
                     quote = None
-                elif char == "\\" and quote == '"':
+                if quote and char == quote:
+                    if quote == "'":
+                        single_quote_end = True
+                    else:
+                        quote = None
                     continue
-                continue
+                if quote:
+                    continue
             if char in {'"', "'"}:
                 quote = char
                 continue
@@ -475,13 +545,30 @@ class Parser:
 
     def _split_comment(self, text: str) -> tuple[str, str | None]:
         quote: str | None = None
+        escaped = False
+        single_quote_end = False
         for index, char in enumerate(text):
             if quote:
-                if char == quote:
+                if quote == '"':
+                    if escaped:
+                        escaped = False
+                        continue
+                    if char == "\\":
+                        escaped = True
+                        continue
+                elif single_quote_end:
+                    single_quote_end = False
+                    if char == "'":
+                        continue
                     quote = None
-                elif char == "\\" and quote == '"':
+                if quote and char == quote:
+                    if quote == "'":
+                        single_quote_end = True
+                    else:
+                        quote = None
                     continue
-                continue
+                if quote:
+                    continue
             if char in {'"', "'"}:
                 quote = char
                 continue

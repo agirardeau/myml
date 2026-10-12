@@ -262,6 +262,8 @@ def _render_string(text: str, *, mode: str, in_flow: bool, style: str | None) ->
 def _string_requires_quotes(text: str, *, mode: str, in_flow: bool) -> bool:
     if text == "":
         return True
+    if any(ord(char) < 32 or char in "\x7f\x85\xa0\u2028\u2029" for char in text):
+        return True
     first = text[0]
     if first in "!\"'`*%&>|,[]{}#":
         return True
@@ -291,7 +293,10 @@ def _string_requires_quotes(text: str, *, mode: str, in_flow: bool) -> bool:
 
 
 def _quote_string(text: str) -> str:
-    return json.dumps(text, ensure_ascii=False)
+    quoted = json.dumps(text, ensure_ascii=False)
+    for char in "\x85\xa0\u2028\u2029":
+        quoted = quoted.replace(char, f"\\u{ord(char):04x}")
+    return quoted
 
 
 def _single_quote_string(text: str) -> str:
