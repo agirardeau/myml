@@ -1,0 +1,23 @@
+{
+  "summary": "A non-hex digit in a Unicode escape is rejected",
+  "tags": [
+    "quoted-string",
+    "escape",
+    "invalid"
+  ],
+  "spec_refs": [
+    "grammar.string-forms"
+  ],
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "malformed-string",
+        "category": "structural_error",
+        "line": 1,
+        "column": 8
+      }
+    }
+  },
+  "emit_profiles": {}
+}

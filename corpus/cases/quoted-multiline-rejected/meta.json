@@ -1,0 +1,24 @@
+{
+  "summary": "Non-block quoted strings cannot span physical lines",
+  "tags": [
+    "quoted-string",
+    "escape",
+    "invalid"
+  ],
+  "spec_refs": [
+    "grammar.string-forms",
+    "unsupported.multiline-strings"
+  ],
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "unsupported-multiline-scalar",
+        "category": "unsupported_feature",
+        "line": 2,
+        "column": 3
+      }
+    }
+  },
+  "emit_profiles": {}
+}

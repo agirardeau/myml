@@ -1,0 +1,37 @@
+{
+  "summary": "An escaped quote keeps a following comma inside a flow string",
+  "tags": [
+    "quoted-string",
+    "escape"
+  ],
+  "spec_refs": [
+    "grammar.string-forms",
+    "grammar.flow-style-sequences"
+  ],
+  "parse_profiles": {
+    "baseline": {
+      "modes": "all",
+      "expect_node_graph": "expected_node_graph.json"
+    }
+  },
+  "emit_profiles": {
+    "standard": {
+      "mode": "standard",
+      "expect_output": "expected_emit_standard.yaml"
+    },
+    "strict": {
+      "mode": "strict",
+      "expect_output": "expected_emit_strict.yaml"
+    },
+    "roundtrip": {
+      "mode": "standard",
+      "options": {
+        "roundtrip": true
+      },
+      "requires": [
+        "roundtrip"
+      ],
+      "expect_output": "expected_emit_roundtrip.yaml"
+    }
+  }
+}

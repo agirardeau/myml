@@ -1,0 +1,27 @@
+{
+  "summary": "An escaped quote and colon remain inside a quoted mapping key",
+  "tags": [
+    "quoted-string",
+    "escape"
+  ],
+  "spec_refs": [
+    "grammar.string-forms",
+    "grammar.block-style-mappings"
+  ],
+  "parse_profiles": {
+    "baseline": {
+      "modes": "all",
+      "expect_node_graph": "expected_node_graph.json"
+    }
+  },
+  "emit_profiles": {
+    "standard": {
+      "mode": "standard",
+      "expect_output": "expected_emit_standard.yaml"
+    },
+    "strict": {
+      "mode": "strict",
+      "expect_output": "expected_emit_strict.yaml"
+    }
+  }
+}
