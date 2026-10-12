@@ -9,8 +9,9 @@ test-py-myml-tiny:
 test-serde-myml:
     cargo test --manifest-path libs/serde-myml/Cargo.toml --locked --all-targets
 
-release-python pkg bump:
-    scripts/release-python-lib "$1" "$2"
-
-release-rust bump:
-    scripts/release-serde-myml "$1"
+release:
+    case "$1" in \
+        py-myml|py-myml-tiny) scripts/release-python-lib "$1" "$2" ;; \
+        serde-myml) scripts/release-serde-myml "$2" ;; \
+        *) echo "Unknown release package: $1" >&2; exit 2 ;; \
+    esac

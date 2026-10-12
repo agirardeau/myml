@@ -22,9 +22,7 @@ just test-py-myml-tiny
 just test-serde-myml
 
 # Release
-just release-python py-myml major|minor|patch
-just release-python py-myml-tiny major|minor|patch
-just release-rust major|minor|patch
+just release {py-myml|py-myml-tiny|serde-myml} {major|minor|patch}
 ```
 
 Release commands require a clean working tree. They verify the library, create a release commit, and an annotated version tag; push the commit and the tag named in the script's output afterward.
