@@ -288,6 +288,9 @@ fn parse_node(
             if anchor != 0 || tag.is_some() {
                 return Err(Error::at("anchors and tags are unsupported", mark));
             }
+            if quoted_scalar_spans_lines(input, mark, style) {
+                return Err(Error::at("multiline quoted scalars are unsupported", mark));
+            }
             scalar(&s, style, mark, mode, in_flow)
         }
         Event::Alias(_) => Err(Error::at("aliases are unsupported", mark)),
@@ -337,6 +340,37 @@ fn parse_node(
         }
         _ => Err(Error::at("unexpected YAML syntax", mark)),
     }
+}
+fn quoted_scalar_spans_lines(input: &str, mark: Marker, style: TScalarStyle) -> bool {
+    let quote = match style {
+        TScalarStyle::SingleQuoted => b'\'',
+        TScalarStyle::DoubleQuoted => b'"',
+        _ => return false,
+    };
+    let bytes = input.as_bytes();
+    let mut i = mark.index();
+    if bytes.get(i) != Some(&quote) {
+        return false;
+    }
+    i += 1;
+    while let Some(&c) = bytes.get(i) {
+        if c == b'\n' || c == b'\r' {
+            return true;
+        }
+        if quote == b'"' && c == b'\\' {
+            i += 2;
+            continue;
+        }
+        if c == quote {
+            if quote == b'\'' && bytes.get(i + 1) == Some(&quote) {
+                i += 2;
+                continue;
+            }
+            return false;
+        }
+        i += 1;
+    }
+    false
 }
 fn scalar(
     s: &str,

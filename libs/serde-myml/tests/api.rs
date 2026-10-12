@@ -27,3 +27,13 @@ fn ranges() {
     assert!(from_str::<Value>("18446744073709551616").is_err());
     assert!(from_str::<u8>("256").is_err());
 }
+#[test]
+fn quoted_scalars_must_stay_on_one_line() {
+    for input in ["value: \"first\n  second\"\n", "value: 'first\n  second'\n"] {
+        for mode in [Mode::Standard, Mode::Strict] {
+            assert!(from_str_with_mode::<Value>(input, mode).is_err());
+        }
+    }
+    assert!(from_str::<Value>("value: \"first\\nsecond\"\n").is_ok());
+    assert!(from_str::<Value>("value: 'it''s fine'\n").is_ok());
+}
