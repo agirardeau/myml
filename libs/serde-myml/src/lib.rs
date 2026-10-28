@@ -534,7 +534,7 @@ fn valid_plain(s: &str, flow: bool) -> bool {
         }
         if !(c.is_alphanumeric()
             || c.is_whitespace()
-            || "_./()$+=;<\\!\"'`*%&>|,[]{}-?:#~".contains(*c))
+            || "_./()$+=;<\\^!\"'`*%&>|@,[]{}-?:#~".contains(*c))
         {
             return false;
         }

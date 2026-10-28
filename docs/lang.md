@@ -127,8 +127,8 @@ Unquoted keys may contain:
 
 Unquoted string scalars may contain:
 
-* `a-zA-Z0-9_./()$+=;<\ `
-* ``!"'`*%&>|``, except as the first character
+* `a-zA-Z0-9_./()$+=;<\^ `
+* ``!"'`*%&>|@``, except as the first character
 * `,[]{}`, except as first character or in flow containers
 * `-?`, except as the first character if followed by a space character
 * `:`, except as the last character or followed by a space character

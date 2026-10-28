@@ -265,13 +265,11 @@ def _string_requires_quotes(text: str, *, mode: str, in_flow: bool) -> bool:
     if any(ord(char) < 32 or char in "\x7f\x85\xa0\u2028\u2029" for char in text):
         return True
     first = text[0]
-    if first in "!\"'`*%&>|,[]{}#":
+    if first in "!\"'`*%&>|,[]{}#@":
         return True
     if first in "-?" and len(text) > 1 and text[1] == " ":
         return True
     if text == "~":
-        return True
-    if "@" in text or "^" in text:
         return True
     if text.endswith(":") or ": " in text:
         return True

@@ -454,12 +454,10 @@ class Parser:
                 column=column,
                 category="lexical_error",
             )
-        if "@" in token or "^" in token:
-            self._error("Unquoted string scalars may not contain `@` or `^`.", code="unquoted-string-invalid-char", line=line, column=column, category="lexical_error")
         if self.mode == "strict":
             self._error("Strict mode requires quoted string scalars.", code="strict-mode-unquoted-string", line=line, column=column, category="mode_restriction")
         first = token[0]
-        if first in "!\"'`*%&>|,[]{}#":
+        if first in "!\"'`*%&>|,[]{}#@":
             self._error("Unsupported unquoted string syntax.", code="invalid-string", line=line, column=column, category="lexical_error")
         if first in "-?" and len(token) > 1 and token[1] == " ":
             self._error("Unsupported unquoted string syntax.", code="invalid-string", line=line, column=column, category="lexical_error")
