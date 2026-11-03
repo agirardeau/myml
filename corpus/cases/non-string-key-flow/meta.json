@@ -1,0 +1,26 @@
+{
+  "summary": "An unquoted flow mapping key that resolves to a number is rejected",
+  "tags": [
+    "flow",
+    "mapping",
+    "unquoted-key",
+    "invalid"
+  ],
+  "spec_refs": [
+    "data-model.mapping-keys-strings",
+    "unsupported.non-string-keys"
+  ],
+  "notes": "YAML 1.2 resolves the plain key `1` to an integer, and Myml mapping keys are strings.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "non-string-key",
+        "category": "structural_error",
+        "line": 1,
+        "column": 9
+      }
+    }
+  },
+  "emit_profiles": {}
+}

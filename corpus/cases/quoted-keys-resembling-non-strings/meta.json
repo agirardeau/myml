@@ -1,0 +1,29 @@
+{
+  "summary": "Quoted keys are strings even when they resemble numbers, booleans, null, or merge keys",
+  "tags": [
+    "mapping",
+    "quoted-string",
+    "merge-key"
+  ],
+  "spec_refs": [
+    "data-model.mapping-keys-strings",
+    "scalar-resolution.string"
+  ],
+  "notes": "Quoting keeps these keys strings, and a quoted `<<` is an ordinary key rather than a merge key. Emitters must quote them.",
+  "parse_profiles": {
+    "baseline": {
+      "modes": "all",
+      "expect_node_graph": "expected_node_graph.json"
+    }
+  },
+  "emit_profiles": {
+    "standard": {
+      "mode": "standard",
+      "expect_output": "expected_emit_standard.yaml"
+    },
+    "strict": {
+      "mode": "strict",
+      "expect_output": "expected_emit_strict.yaml"
+    }
+  }
+}

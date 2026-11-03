@@ -1,0 +1,25 @@
+{
+  "summary": "An unquoted key that resolves to a float is rejected",
+  "tags": [
+    "mapping",
+    "unquoted-key",
+    "invalid"
+  ],
+  "spec_refs": [
+    "data-model.mapping-keys-strings",
+    "unsupported.non-string-keys"
+  ],
+  "notes": "YAML 1.2 resolves the plain key `1.5` to a float, and Myml mapping keys are strings.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "non-string-key",
+        "category": "structural_error",
+        "line": 1,
+        "column": 1
+      }
+    }
+  },
+  "emit_profiles": {}
+}

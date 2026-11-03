@@ -201,8 +201,6 @@ class Parser:
         key_text = body[:separator].rstrip()
         value_text = body[separator + 1 :].lstrip()
         key = self._parse_key(key_text, line.number, indent + body.index(key_text) + 1)
-        if key == "<<":
-            self._error("Merge keys are not supported.", code="unsupported-merge-key", line=line.number, column=indent + 1, category="unsupported_feature")
         if key in seen_keys:
             self._error("Duplicate mapping key.", code="duplicate-key", line=line.number, column=indent + 1, category="semantic_error")
         seen_keys.add(key)
@@ -344,7 +342,7 @@ class Parser:
 
     def _parse_key(self, token: str, line: int, column: int) -> str:
         if token == "<<":
-            return token
+            self._error("Merge keys are not supported.", code="unsupported-merge-key", line=line, column=column, category="unsupported_feature")
         if token.startswith("'") or token.startswith('"'):
             return self._parse_quoted_scalar(token, line, column)
         if "#" in token:
@@ -355,6 +353,8 @@ class Parser:
             self._error("Mapping keys must be strings.", code="non-string-key", line=line, column=column)
         if not _UNQUOTED_KEY_RE.match(token):
             self._error("Unsupported unquoted key syntax.", code="invalid-key", line=line, column=column)
+        if token == "~" or not isinstance(self._parse_plain_scalar(token, line, column, in_flow=False, mode="standard"), str):
+            self._error("Mapping keys must be strings.", code="non-string-key", line=line, column=column)
         return token
 
     def _parse_quoted_scalar(self, token: str, line: int, column: int) -> str:
@@ -406,7 +406,7 @@ class Parser:
         value = "".join(result)
         return value
 
-    def _parse_plain_scalar(self, token: str, line: int, column: int, *, in_flow: bool):
+    def _parse_plain_scalar(self, token: str, line: int, column: int, *, in_flow: bool, mode: str | None = None):
         if token in {"true", "false"}:
             return token == "true"
         if token == "null":
@@ -456,7 +456,7 @@ class Parser:
                 column=column,
                 category="lexical_error",
             )
-        if self.mode == "strict":
+        if (mode or self.mode) == "strict":
             self._error("Strict mode requires quoted string scalars.", code="strict-mode-unquoted-string", line=line, column=column, category="mode_restriction")
         first = token[0]
         if first in "!\"'`*%&>|,[]{}#@":
