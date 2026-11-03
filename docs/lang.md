@@ -134,7 +134,8 @@ Unquoted string scalars may contain:
 * `a-zA-Z0-9_./()$+=;<\^ `
 * ``!"'`*%&>|@``, except as the first character
 * `,[]{}`, except as first character or in flow containers
-* `-?`, except as the first character if followed by a space character
+* `-?`, except as the first character if followed by a space character or as
+  the only character
 * `:`, except as the last character or followed by a space character
 * `#`, except as the first character or preceded by a space character
 * `~`, except as the only character

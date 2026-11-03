@@ -115,7 +115,10 @@ fn valid_plain(s: &str) -> bool {
     for (i, &c) in chars.iter().enumerate() {
         let prev = i.checked_sub(1).map(|j| chars[j]);
         let next = chars.get(i + 1).copied();
-        if i == 0 && ("!\"'`*%&>|,[]{}#@".contains(c) || "-?".contains(c) && next == Some(' ')) {
+        if i == 0
+            && ("!\"'`*%&>|,[]{}#@".contains(c)
+                || "-?".contains(c) && matches!(next, None | Some(' ')))
+        {
             return false;
         }
         if c == ':' && next == Some(' ') || c == '#' && prev == Some(' ') {

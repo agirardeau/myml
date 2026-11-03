@@ -19,10 +19,8 @@ only_less-than: <
 only_backslash: \
 question: a?b
 leading_question: ?foo
-only_question: ?
 dash: a-b
 leading_dash: -x
-only_dash: -
 bang: a!b
 double_quote: a"b
 single_quote: a'b

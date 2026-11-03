@@ -755,7 +755,9 @@ pub(crate) fn plain_scalar(
     }
     let mut cs = token.chars();
     let first = cs.next().unwrap();
-    if "!\"'`*%&>|,[]{}#@".contains(first) || "-?".contains(first) && cs.next() == Some(' ') {
+    if "!\"'`*%&>|,[]{}#@".contains(first)
+        || "-?".contains(first) && matches!(cs.next(), None | Some(' '))
+    {
         return err("invalid unquoted string scalar");
     }
     if token.ends_with(':') || token.contains(": ") {

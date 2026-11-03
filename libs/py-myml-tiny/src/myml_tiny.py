@@ -474,7 +474,7 @@ class Parser:
         first = token[0]
         if first in "!\"'`*%&>|,[]{}#@":
             self._error("Unsupported unquoted string syntax.", code="invalid-string", line=line, column=column, category="lexical_error")
-        if first in "-?" and len(token) > 1 and token[1] == " ":
+        if first in "-?" and (len(token) == 1 or token[1] == " "):
             self._error("Unsupported unquoted string syntax.", code="invalid-string", line=line, column=column, category="lexical_error")
         if token.endswith(":") or ": " in token:
             self._error("`:` is not permitted at the end of or before a space in unquoted string scalars.", code="unquoted-colon", line=line, column=column, category="lexical_error")
