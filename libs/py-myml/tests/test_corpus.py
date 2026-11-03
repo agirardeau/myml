@@ -46,6 +46,11 @@ def materialize(value):
     return value
 
 
+def case_dirs(cases_root):
+    # Hidden entries, such as tool metadata directories, are not corpus cases.
+    return sorted(path for path in cases_root.iterdir() if path.is_dir() and not path.name.startswith("."))
+
+
 def expand_modes(mode_spec):
     if mode_spec == "all":
         return list(SUPPORTED_PARSE_MODES)
@@ -156,7 +161,7 @@ class CorpusTests(unittest.TestCase):
 
     def test_cases(self):
         cases_root = ROOT / "corpus" / "cases"
-        for case_dir in sorted(cases_root.iterdir()):
+        for case_dir in case_dirs(cases_root):
             with self.subTest(case=case_dir.name):
                 meta = json.loads((case_dir / "meta.json").read_text())
                 source = (case_dir / "input.yaml").read_text()
