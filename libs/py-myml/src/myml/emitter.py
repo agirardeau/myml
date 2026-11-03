@@ -5,8 +5,10 @@ import math
 import re
 from typing import Any
 
+from .errors import ParseError
 from .modes import is_special_float, validate_mode
 from .nodes import DocumentNode, MappingEntry, MappingNode, Node, ScalarNode, SequenceItem, SequenceNode
+from .parser import Parser
 from .roundtrip import RoundTripMapping, RoundTripSequence, coerce_node
 
 _SAFE_KEY_RE = re.compile(r"^[\w./$()~\-]+$", re.UNICODE)
@@ -218,7 +220,7 @@ def _render_flow_value(node: Node, *, mode: str) -> str:
 
 
 def _render_key(key: str) -> str:
-    if _SAFE_KEY_RE.match(key):
+    if _SAFE_KEY_RE.match(key) and not _string_requires_quotes(key, mode="standard", in_flow=False):
         return key
     return json.dumps(key, ensure_ascii=False)
 
@@ -271,34 +273,18 @@ def _render_string(text: str, *, mode: str, in_flow: bool, style: str | None) ->
 
 
 def _string_requires_quotes(text: str, *, mode: str, in_flow: bool) -> bool:
-    if text == "":
+    """Whether `text` must be quoted: it is emitted unquoted only if it parses back as itself."""
+    if text == "" or text != text.strip():
         return True
     if any(ord(char) < 32 or char in "\x7f\x85\xa0\u2028\u2029" for char in text):
         return True
-    first = text[0]
-    if first in "!\"'`*%&>|,[]{}#@":
-        return True
-    if first in "-?" and len(text) > 1 and text[1] == " ":
-        return True
-    if text == "~":
-        return True
-    if text.endswith(":") or ": " in text:
-        return True
     if text.startswith("#") or " #" in text:
         return True
-    if in_flow and any(c in text for c in ",[]{}"):
+    try:
+        node = Parser("", mode="standard")._parse_inline_value(text, 1, 1, in_flow=in_flow)
+    except ParseError:
         return True
-    if text in {"true", "false", "null", ".inf", "-.inf", ".nan"}:
-        return True
-    if re.match(r"^(?:0|-?[1-9][0-9]*)$", text):
-        return True
-    if re.match(r"^0x[0-9A-Fa-f]+$", text):
-        return True
-    if re.match(r"^-?(?:0|[1-9][0-9]*)\.[0-9]+$", text):
-        return True
-    if re.match(r"^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?e-?[0-9]+$", text):
-        return True
-    return False
+    return not (isinstance(node, ScalarNode) and node.kind == "string" and node.style == "plain" and node.value == text)
 
 
 def _quote_string(text: str) -> str:
