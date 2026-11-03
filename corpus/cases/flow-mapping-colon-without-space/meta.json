@@ -1,0 +1,26 @@
+{
+  "summary": "A flow mapping entry needs a space after an unquoted key's colon",
+  "tags": [
+    "flow",
+    "mapping",
+    "colon",
+    "invalid"
+  ],
+  "spec_refs": [
+    "grammar.flow-style-mappings",
+    "unsupported.missing-value"
+  ],
+  "notes": "In YAML 1.2, `{a:1}` is a mapping with the key `a:1` and no value, which Myml does not support.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "malformed-mapping",
+        "category": "structural_error",
+        "line": 1,
+        "column": 9
+      }
+    }
+  },
+  "emit_profiles": {}
+}

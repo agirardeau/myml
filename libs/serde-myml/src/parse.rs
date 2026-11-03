@@ -84,7 +84,7 @@ impl<'a> Parser<'a> {
         if is_sequence_item(body) {
             return self.parse_sequence(indent);
         }
-        if find_mapping_separator(body).is_some() {
+        if find_mapping_separator(body, false).is_some() {
             let mut map = BTreeMap::new();
             self.parse_mapping_into(indent, &mut map)?;
             return Ok(Value::Mapping(map));
@@ -110,7 +110,10 @@ impl<'a> Parser<'a> {
         }
         let body = split_comment(&self.lines[n][parent_indent..]);
         let text = body.trim();
-        if !text.is_empty() && !text.starts_with("- ") && find_mapping_separator(body).is_none() {
+        if !text.is_empty()
+            && !text.starts_with("- ")
+            && find_mapping_separator(body, false).is_none()
+        {
             return Err(Error::at(
                 "multiline non-block scalar strings are unsupported",
                 n + 1,
@@ -169,7 +172,7 @@ impl<'a> Parser<'a> {
         map: &mut BTreeMap<String, Value>,
     ) -> Result<(), Error> {
         let line = n + 1;
-        let sep = find_mapping_separator(body)
+        let sep = find_mapping_separator(body, false)
             .ok_or_else(|| Error::at("malformed mapping entry", line, indent + 1))?;
         let key_text = body[..sep].trim_end();
         let value_part = &body[sep + 1..];
@@ -243,7 +246,7 @@ impl<'a> Parser<'a> {
                 }
             } else if token == "|" || token == ">" {
                 self.parse_block_scalar(token, indent, line)?
-            } else if find_mapping_separator(token).is_some() && !token.starts_with('{') {
+            } else if find_mapping_separator(token, false).is_some() && !token.starts_with('{') {
                 // The item is a block mapping whose keys align with its first key.
                 let key_indent = indent + 1 + after.len() - after.trim_start().len();
                 let mut map = BTreeMap::new();
@@ -375,7 +378,7 @@ impl<'a> Parser<'a> {
             return Ok(Value::Mapping(map));
         }
         for (part, part_col) in split_flow_items(token, &commas, line, col)? {
-            let sep = find_mapping_separator(part)
+            let sep = find_mapping_separator(part, true)
                 .ok_or_else(|| Error::at("malformed flow mapping entry", line, part_col))?;
             let key = parse_key(part[..sep].trim_end(), line, part_col)?;
             if map.contains_key(&key) {
@@ -455,9 +458,10 @@ fn split_comment(text: &str) -> &str {
     text.trim_end()
 }
 
-/// Finds the `:` separating a mapping key from its value: outside quotes and flow containers,
-/// and followed by whitespace, the end of the text, or directly preceded by a quoted key.
-fn find_mapping_separator(text: &str) -> Option<usize> {
+/// Finds the `:` separating a mapping key from its value: outside quotes and flow containers, and
+/// followed by whitespace or the end of the text. In a flow mapping it may also directly follow a
+/// quoted key, as in `{"a":1}`.
+fn find_mapping_separator(text: &str, in_flow: bool) -> Option<usize> {
     let mut depth = 0i32;
     for (i, c) in outside_quotes(text) {
         match c {
@@ -465,7 +469,9 @@ fn find_mapping_separator(text: &str) -> Option<usize> {
             ']' | '}' => depth -= 1,
             ':' if depth == 0 => {
                 let next = text[i + 1..].chars().next();
-                if next.is_none_or(char::is_whitespace) || text[..i].ends_with(['"', '\'']) {
+                if next.is_none_or(char::is_whitespace)
+                    || in_flow && text[..i].ends_with(['"', '\''])
+                {
                     return Some(i);
                 }
             }

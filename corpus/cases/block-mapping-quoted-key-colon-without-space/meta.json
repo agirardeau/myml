@@ -1,0 +1,25 @@
+{
+  "summary": "A block mapping value may not directly follow a quoted key's colon",
+  "tags": [
+    "block-mapping",
+    "colon",
+    "quoted-string",
+    "invalid"
+  ],
+  "spec_refs": [
+    "grammar.block-style-mappings"
+  ],
+  "notes": "Unlike flow mappings, YAML 1.2 block mappings require whitespace after the `:` even for quoted keys.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "malformed-string",
+        "category": "structural_error",
+        "line": 1,
+        "column": 1
+      }
+    }
+  },
+  "emit_profiles": {}
+}

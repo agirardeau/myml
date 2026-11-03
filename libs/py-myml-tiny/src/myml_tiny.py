@@ -314,7 +314,7 @@ class Parser:
         result: dict[str, object] = {}
         seen_keys: set[str] = set()
         for part, part_column in self._split_flow_items(token, commas, line, column):
-            separator = self._find_mapping_separator(part)
+            separator = self._find_mapping_separator(part, in_flow=True)
             if separator is None:
                 self._error("Malformed flow mapping entry.", code="malformed-mapping", line=line, column=part_column)
             key_text = part[:separator].rstrip()
@@ -527,7 +527,12 @@ class Parser:
             parts.append((part, column + start + 1 + len(segment) - len(segment.lstrip())))
         return parts
 
-    def _find_mapping_separator(self, text: str) -> int | None:
+    def _find_mapping_separator(self, text: str, *, in_flow: bool = False) -> int | None:
+        """Find the `:` that separates a key from its value.
+
+        The `:` must be outside quotes and flow containers and followed by whitespace or the end of
+        `text`; in a flow mapping it may also directly follow a quoted key, as in `{"a":1}`.
+        """
         quote: str | None = None
         escaped = False
         single_quote_end = False
@@ -564,7 +569,9 @@ class Parser:
                 depth -= 1
                 continue
             if depth == 0 and char == ":":
-                return index
+                following = text[index + 1 : index + 2]
+                if not following or following.isspace() or in_flow and text[:index].endswith(("'", '"')):
+                    return index
         return None
 
     def _split_comment(self, text: str) -> tuple[str, str | None]:
