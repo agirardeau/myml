@@ -6,7 +6,7 @@ pub(crate) fn parse(text: &str, mode: Mode) -> Result<Value, Error> {
     let text = text.strip_prefix('\u{feff}').unwrap_or(text);
     let lines = split_lines(text);
     for (n, line) in lines.iter().enumerate() {
-        if let Some((i, c)) = line.char_indices().find(|&(_, c)| !is_printable(c)) {
+        if let Some((i, c)) = line.char_indices().find(|&(_, c)| !is_allowed_raw(c)) {
             return Err(Error::at(
                 format!(
                     "character U+{:04X} is not allowed; write it as an escape in a double-quoted string",
@@ -422,6 +422,18 @@ pub(crate) fn is_printable(c: char) -> bool {
         || c >= '\u{10000}'
 }
 
+/// Whether `c` may appear unescaped in Myml. Besides non-printable characters, this excludes
+/// characters that are invisible or confusing in editors and rendered text: NEL, line and paragraph
+/// separators, byte order marks after the start of the document, zero-width spaces, and
+/// bidirectional embedding, override, and isolate controls.
+pub(crate) fn is_allowed_raw(c: char) -> bool {
+    is_printable(c)
+        && !matches!(
+            c,
+            '\u{85}' | '\u{2028}' | '\u{2029}' | '\u{feff}' | '\u{200b}' | '\u{202a}'..='\u{202e}' | '\u{2066}'..='\u{2069}'
+        )
+}
+
 /// Splits `text` at YAML 1.2 line breaks: CRLF, CR, and LF.
 fn split_lines(text: &str) -> Vec<&str> {
     let mut lines = Vec::new();
@@ -729,13 +741,6 @@ pub(crate) fn plain_scalar(
 ) -> Result<Value, Error> {
     let err = |message: &str| Err(Error::at(message, line, col));
     let range = || Error::at("numeric range exceeded", line, col);
-    if let Some(i) = token.find('\u{feff}') {
-        return Err(Error::at(
-            "a byte order mark is not allowed in an unquoted scalar",
-            line,
-            col + chars(&token[..i]),
-        ));
-    }
     match token {
         "" => return err("expected a value"),
         "null" => return Ok(Value::Null),

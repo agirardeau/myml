@@ -26,7 +26,7 @@ class PublicApiTests(unittest.TestCase):
         self.assertEqual(loads(dumps(value)), value)
 
     def test_strings_that_would_not_parse_back_are_quoted(self) -> None:
-        texts = ["True", "-0", "1_000", " pad", "pad ", "~", "a #b", "x", "a\x80b", "a\ufffeb", "a\x0cb"]
+        texts = ["True", "-0", "1_000", " pad", "pad ", "~", "a #b", "x", "a\x80b", "a\ufffeb", "a\x0cb", "a\u200bb\u202ec\ufeff"]
         value = {"items": texts, **{text: index for index, text in enumerate(texts)}}
 
         self.assertEqual(loads(dumps(value)), value)

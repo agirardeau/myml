@@ -110,6 +110,7 @@ fn quoted_strings_roundtrip() {
         "line\nbreak\ttab",
         "\u{1}\u{85}\u{2028}",
         "\u{80}\u{fffe}\u{c}",
+        "\u{200b}\u{202e}\u{2066}\u{feff}",
         "True",
         " pad",
         "a: b",

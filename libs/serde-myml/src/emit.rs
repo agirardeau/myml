@@ -1,5 +1,5 @@
 //! Emitting canonical block-style Myml from a `Value`.
-use crate::parse::{is_printable, plain_scalar, valid_key};
+use crate::parse::{is_allowed_raw, plain_scalar, valid_key};
 use crate::{Mode, Value};
 use std::fmt::Write;
 
@@ -141,12 +141,7 @@ fn quote(s: &str) -> String {
             '\n' => out.push_str("\\n"),
             '\t' => out.push_str("\\t"),
             '\r' => out.push_str("\\r"),
-            c if !is_printable(c)
-                || c == '\u{85}'
-                || matches!(c, '\u{2028}' | '\u{2029}' | '\u{feff}') =>
-            {
-                write!(out, "\\u{:04x}", c as u32).unwrap()
-            }
+            c if !is_allowed_raw(c) => write!(out, "\\u{:04x}", c as u32).unwrap(),
             c => out.push(c),
         }
     }

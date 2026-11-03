@@ -23,10 +23,22 @@ Mapping keys are strings.
 ## Encoding and Line Breaks
 
 A Myml document is UTF-8 text. It may begin with a byte order mark (U+FEFF),
-which is not content. A byte order mark is not allowed in unquoted scalars.
+which is not content.
 
-Characters that YAML 1.2 does not allow unescaped, such as most control
-characters, are errors; double-quoted strings may contain them as escapes.
+The following characters are errors when unescaped anywhere in a document,
+including in quoted scalars and comments. Double-quoted strings may contain
+them as escapes such as `\N`, `\L`, `\P`, or `\uFEFF`.
+
+* Characters that YAML 1.2 does not allow unescaped, such as most control
+  characters
+* Characters that are invisible or confusing in editors and rendered text,
+  although YAML 1.2 allows them:
+  * NEL (U+0085), line separator (U+2028), and paragraph separator (U+2029),
+    which can render as line breaks
+  * Byte order marks (U+FEFF) after the start of the document
+  * Zero-width space (U+200B)
+  * Bidirectional embedding, override, and isolate controls (U+202A to U+202E
+    and U+2066 to U+2069)
 
 Line breaks are CRLF, CR, or LF, and a document may mix them. Each line break
 within a scalar value is read as LF.

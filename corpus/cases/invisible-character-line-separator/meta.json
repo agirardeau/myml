@@ -1,0 +1,24 @@
+{
+  "summary": "Unescaped a line separator (U+2028) is rejected, even in a quoted string",
+  "tags": [
+    "invalid",
+    "lexical",
+    "quoted-string"
+  ],
+  "spec_refs": [
+    "grammar.encoding"
+  ],
+  "notes": "YAML 1.2 allows this character, but it is invisible or confusing in editors and rendered text, so Myml requires an escape. The character sits between `a` and `b`.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "invalid-character",
+        "category": "lexical_error",
+        "line": 1,
+        "column": 10
+      }
+    }
+  },
+  "emit_profiles": {}
+}

@@ -42,6 +42,17 @@ def _is_printable(char: str) -> bool:
     )
 
 
+# Characters that YAML allows unescaped but that are invisible or confusing in editors and rendered
+# text: NEL, line and paragraph separators, byte order marks after the start of the document,
+# zero-width spaces, and bidirectional embedding, override, and isolate controls.
+_INVISIBLE_CHARS = frozenset("\x85\u2028\u2029\ufeff\u200b\u202a\u202b\u202c\u202d\u202e\u2066\u2067\u2068\u2069")
+
+
+def _is_allowed_raw(char: str) -> bool:
+    """Whether `char` may appear unescaped in Myml."""
+    return _is_printable(char) and char not in _INVISIBLE_CHARS
+
+
 def _split_lines(text: str) -> list[str]:
     """Split `text` at YAML 1.2 line breaks: CRLF, CR, and LF.
 
@@ -121,7 +132,7 @@ class Parser:
     def _reject_invalid_characters(self) -> None:
         for line in self.lines:
             for index, char in enumerate(line.text):
-                if not _is_printable(char):
+                if not _is_allowed_raw(char):
                     self._error(
                         f"Character U+{ord(char):04X} is not allowed; write it as an escape in a double-quoted string.",
                         code="invalid-character",
@@ -453,14 +464,6 @@ class Parser:
         return ScalarNode(value, kind="string", style="single" if quote == "'" else "double", raw=token)
 
     def _parse_plain_scalar(self, token: str, line: int, column: int, *, in_flow: bool, mode: str | None = None):
-        if "\ufeff" in token:
-            self._error(
-                "A byte order mark is not allowed in an unquoted scalar.",
-                code="invalid-character",
-                line=line,
-                column=column + token.index("\ufeff"),
-                category="lexical_error",
-            )
         if token in {"true", "false"}:
             return ScalarNode(token == "true", kind="boolean", style="plain", raw=token)
         if token == "null":

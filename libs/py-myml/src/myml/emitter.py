@@ -8,7 +8,7 @@ from typing import Any
 from .errors import ParseError
 from .modes import is_special_float, validate_mode
 from .nodes import DocumentNode, MappingEntry, MappingNode, Node, ScalarNode, SequenceItem, SequenceNode
-from .parser import Parser, _is_printable
+from .parser import Parser, _is_allowed_raw
 from .roundtrip import RoundTripMapping, RoundTripSequence, coerce_node
 
 _SAFE_KEY_RE = re.compile(r"^[\w./$()~\-]+$", re.UNICODE)
@@ -272,7 +272,7 @@ def _string_requires_quotes(text: str, *, mode: str, in_flow: bool) -> bool:
     """Whether `text` must be quoted: it is emitted unquoted only if it parses back as itself."""
     if text == "" or text != text.strip():
         return True
-    if any(not _is_printable(char) or char in "\x85\xa0\u2028\u2029" for char in text):
+    if any(not _is_allowed_raw(char) or char == "\xa0" for char in text):
         return True
     if text.startswith("#") or " #" in text:
         return True
@@ -286,7 +286,7 @@ def _string_requires_quotes(text: str, *, mode: str, in_flow: bool) -> bool:
 def _quote_string(text: str) -> str:
     quoted = json.dumps(text, ensure_ascii=False)
     return "".join(
-        f"\\u{ord(char):04x}" if not _is_printable(char) or char in "\x85\xa0\u2028\u2029" else char
+        f"\\u{ord(char):04x}" if not _is_allowed_raw(char) or char == "\xa0" else char
         for char in quoted
     )
 
