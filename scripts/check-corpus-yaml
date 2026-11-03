@@ -93,11 +93,7 @@ def graph(node):
 
 
 def same(a, b) -> bool:
-    """Compares node graphs, treating integral floats and ints as equal but never bools as numbers."""
-    if isinstance(a, bool) or isinstance(b, bool):
-        return type(a) is type(b) and a == b
-    if isinstance(a, (int, float)) and isinstance(b, (int, float)):
-        return a == b
+    """Compares node graphs, never treating floats as ints or bools as numbers."""
     if isinstance(a, dict) and isinstance(b, dict):
         return a.keys() == b.keys() and all(same(a[k], b[k]) for k in a)
     if isinstance(a, list) and isinstance(b, list):

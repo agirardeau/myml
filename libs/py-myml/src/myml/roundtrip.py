@@ -117,9 +117,9 @@ def coerce_node(value: Any) -> Node:
             node.items.append(_item_from_value(item))
         return node
     kind = infer_scalar_kind(value)
-    style = "literal" if kind == "string" and str(value).endswith("\n") and all(
-        char == "\n" or (ord(char) >= 32 and char not in "\x7f\x85\u2028\u2029") for char in str(value)
-    ) else "plain"
+    text = str(value)
+    # The emitter falls back to a quoted string when the literal style cannot represent the value.
+    style = "literal" if kind == "string" and text.endswith("\n") and "\t" not in text else "plain"
     raw = None
     return ScalarNode(value, kind=kind, style=style, raw=raw)
 

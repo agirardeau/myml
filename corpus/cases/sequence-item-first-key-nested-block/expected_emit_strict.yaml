@@ -7,4 +7,5 @@ items:
   - deep:
       inner:
         leaf: 4
-  - text: "line\n"
+  - text: |
+      line

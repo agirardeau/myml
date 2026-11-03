@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use serde_myml::{from_str, from_str_with_mode, to_string, to_string_with_mode, Mode, Value};
+use serde_myml::{from_str, from_str_with_mode, to_string, to_string_with_mode, Map, Mode, Value};
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 struct Example {
     name: String,
@@ -132,6 +132,21 @@ fn quoted_strings_roundtrip() {
         "True",
         " pad",
         "a: b",
+        "+",
+        "-x",
+        "-",
+        "- x",
+        "~",
+        ".5",
+        "0123",
+        "1E5",
+        "0o17",
+        "-0x1F",
+        "2026-04-09",
+        "13:22",
+        "café 😀",
+        "nb\u{a0}sp",
+        "\u{8}\u{c}",
     ] {
         let s = to_string(&text).unwrap();
         assert_eq!(from_str::<String>(&s).unwrap(), text, "{s:?}");
@@ -161,4 +176,83 @@ fn unsupported_syntax_is_rejected() {
 fn errors_report_positions() {
     let e = from_str::<Value>("a: 1\nb: [1, 2\n").unwrap_err();
     assert_eq!((e.line(), e.column()), (Some(2), Some(4)));
+}
+#[test]
+fn large_mappings_keep_order_through_insert_and_remove() {
+    let mut m = Map::new();
+    for i in (0..20).rev() {
+        assert_eq!(m.insert(format!("k{i}"), Value::U64(i)), None);
+    }
+    assert_eq!(
+        m.insert("k5".into(), Value::Null),
+        Some(Value::U64(5)),
+        "replacing keeps position"
+    );
+    for i in [19, 0, 7] {
+        assert_eq!(m.remove(&format!("k{i}")), Some(Value::U64(i)));
+    }
+    let expected: Vec<String> = (1..19)
+        .rev()
+        .filter(|&i| i != 7)
+        .map(|i| format!("k{i}"))
+        .collect();
+    assert_eq!(m.keys().cloned().collect::<Vec<_>>(), expected);
+    assert_eq!(m["k12"], Value::U64(12));
+    assert_eq!(m["k5"], Value::Null);
+    while m.len() > 3 {
+        let key = m.keys().next().unwrap().clone();
+        m.remove(&key);
+    }
+    assert_eq!(m.keys().collect::<Vec<_>>(), ["k3", "k2", "k1"]);
+    assert_eq!(m.get("k2"), Some(&Value::U64(2)));
+}
+#[test]
+fn multiline_strings_use_literal_blocks_when_representable() {
+    let v = from_str::<Value>("- |\n  a\n   b\n- c: |\n    d\n").unwrap();
+    assert_eq!(to_string(&v).unwrap(), "- |\n  a\n   b\n- c: |\n    d\n");
+    assert_eq!(to_string(&"top\n").unwrap(), "|\n  top\n");
+    assert_eq!(to_string(&"\na\n  \n").unwrap(), "|\n\n  a\n    \n");
+    for text in [
+        "no newline\nend",
+        "two\n\n",
+        " lead\n",
+        "tab\there\n",
+        "  \nspaces before\n",
+    ] {
+        let s = to_string(&text).unwrap();
+        assert!(s.starts_with('"'), "{s:?}");
+        assert_eq!(from_str::<String>(&s).unwrap(), text);
+    }
+}
+#[test]
+fn floats_keep_their_type_and_value() {
+    assert_eq!(from_str::<Value>("1e6").unwrap(), Value::F64(1e6));
+    let cases = [
+        (1e6, "1e6"),
+        (-1e6, "-1e6"),
+        (150.0, "150.0"),
+        (1000.0, "1000.0"),
+        (10000.0, "1e4"),
+        (1.0, "1.0"),
+        (0.0, "0.0"),
+        (-0.0, "-0.0"),
+        (0.5, "0.5"),
+        (0.0001, "0.0001"),
+        (0.00001, "1e-5"),
+        (1.25e-7, "1.25e-7"),
+        (12345678.9, "12345678.9"),
+        (0.1 + 0.2, "0.30000000000000004"),
+        (1e300, "1e300"),
+        (f64::MAX, "1.7976931348623157e308"),
+        (f64::MIN_POSITIVE, "2.2250738585072014e-308"),
+    ];
+    for (v, text) in cases {
+        assert_eq!(to_string(&v).unwrap(), format!("{text}\n"));
+        let back = from_str::<Value>(text).unwrap();
+        assert!(
+            matches!(back, Value::F64(x) if x.to_bits() == v.to_bits()),
+            "{text}"
+        );
+    }
+    assert_eq!(to_string(&1_000_000u32).unwrap(), "1000000\n");
 }

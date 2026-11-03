@@ -19,6 +19,17 @@ SUPPORTED_PARSE_MODES = tuple(VALID_MODES)
 SUPPORTED_OPTIONAL_FEATURES = {"roundtrip"}
 
 
+def typed(value):
+    """Tag numbers with their type, so an integral float never compares equal to an int."""
+    if isinstance(value, dict):
+        return {key: typed(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [typed(item) for item in value]
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return (type(value).__name__, value)
+    return value
+
+
 def normalize(value):
     if isinstance(value, dict):
         return {key: normalize(item) for key, item in value.items()}
@@ -189,7 +200,7 @@ class CorpusTests(unittest.TestCase):
                         with self.subTest(case=case_dir.name, parse_profile=profile_id, mode=mode):
                             if "expect_node_graph" in profile:
                                 parsed = loads(source, mode=mode)
-                                self.assertEqual(normalize(parsed), expected_node_graph)
+                                self.assertEqual(typed(normalize(parsed)), typed(expected_node_graph))
                             else:
                                 expected_error = profile["expect_error"]
                                 with self.assertRaises(ParseError) as raised:
@@ -222,7 +233,7 @@ class CorpusTests(unittest.TestCase):
                                 actual_output = dumps(semantic_value, mode=profile["mode"])
                             self.assertEqual(actual_output, expected_output)
                             reparsed = loads(actual_output, mode=profile["mode"])
-                            self.assertEqual(normalize(reparsed), expected_node_graph)
+                            self.assertEqual(typed(normalize(reparsed)), typed(expected_node_graph))
                         else:
                             expected_error = profile["expect_error"]
                             with self.assertRaises(MymlError) as raised:

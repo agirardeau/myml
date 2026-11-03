@@ -17,6 +17,17 @@ SUPPORTED_PARSE_MODES = ("standard", "strict")
 SUPPORTED_OPTIONAL_FEATURES: set[str] = set()
 
 
+def typed(value):
+    """Tag numbers with their type, so an integral float never compares equal to an int."""
+    if isinstance(value, dict):
+        return {key: typed(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [typed(item) for item in value]
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return (type(value).__name__, value)
+    return value
+
+
 def normalize(value):
     if isinstance(value, dict):
         return {key: normalize(item) for key, item in value.items()}
@@ -68,7 +79,7 @@ class CorpusTests(unittest.TestCase):
                         with self.subTest(case=case_dir.name, parse_profile=profile_id, mode=mode):
                             if "expect_node_graph" in profile:
                                 expected = json.loads((case_dir / profile["expect_node_graph"]).read_text())
-                                self.assertEqual(normalize(loads(source, mode=mode)), expected)
+                                self.assertEqual(typed(normalize(loads(source, mode=mode))), typed(expected))
                             else:
                                 expected_error = profile["expect_error"]
                                 with self.assertRaises(ParseError) as raised:

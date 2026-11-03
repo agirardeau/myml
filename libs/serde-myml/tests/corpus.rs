@@ -52,6 +52,50 @@ fn baseline_parse_profiles() {
     }
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 }
+#[test]
+fn baseline_emit_profiles() {
+    let mut failures = Vec::new();
+    for dir in case_dirs() {
+        let meta = read_json(&dir.join("meta.json"));
+        let Some(Json::Obj(profiles)) = meta.get("emit_profiles") else {
+            continue;
+        };
+        let input = fs::read_to_string(dir.join("input.yaml")).unwrap();
+        for (name, profile) in profiles {
+            if profile.get("requires").is_some() || profile.get("options").is_some() {
+                continue;
+            }
+            let mode = match profile.get("mode") {
+                Some(Json::Str(m)) if m == "strict" => Mode::Strict,
+                Some(Json::Str(m)) if m == "standard" => Mode::Standard,
+                other => panic!("{} {name}: unknown emit mode {other:?}", dir.display()),
+            };
+            let emitted = from_str_with_mode::<Value>(&input, Mode::Standard)
+                .and_then(|v| to_string_with_mode(&v, mode));
+            match (profile.get("expect_output"), emitted) {
+                (Some(Json::Str(expected)), Ok(actual)) => {
+                    let expected = fs::read_to_string(dir.join(expected)).unwrap();
+                    if actual != expected {
+                        failures.push(format!(
+                            "{} {name}: expected {expected:?}, got {actual:?}",
+                            dir.display()
+                        ))
+                    }
+                }
+                (Some(Json::Str(_)), Err(e)) => {
+                    failures.push(format!("{} {name}: {e}", dir.display()))
+                }
+                (None, Ok(_)) => failures.push(format!("{} {name}: expected error", dir.display())),
+                (None, Err(_)) => {}
+                (Some(other), _) => {
+                    panic!("{} {name}: invalid expect_output {other:?}", dir.display())
+                }
+            }
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
 fn case_dirs() -> Vec<std::path::PathBuf> {
     let root = concat!(env!("CARGO_MANIFEST_DIR"), "/../../corpus/cases");
     let mut dirs: Vec<_> = fs::read_dir(root)
@@ -81,7 +125,7 @@ fn emitted_values_parse() {
 }
 
 /// Converts a parsed value to the corpus node-graph JSON form, where special floats are strings
-/// and integral numbers compare equal regardless of representation.
+/// and floats are JSON numbers with a fraction or exponent, so they never compare equal to integers.
 fn graph(v: Value) -> Json {
     match v {
         Value::Null => Json::Null,
@@ -91,18 +135,10 @@ fn graph(v: Value) -> Json {
         Value::F64(x) if x.is_nan() => Json::Str(".nan".into()),
         Value::F64(x) if x == f64::INFINITY => Json::Str(".inf".into()),
         Value::F64(x) if x == f64::NEG_INFINITY => Json::Str("-.inf".into()),
-        Value::F64(x) => number(x),
+        Value::F64(x) => Json::Float(x),
         Value::String(x) => Json::Str(x),
         Value::Sequence(x) => Json::Arr(x.into_iter().map(graph).collect()),
         Value::Mapping(x) => Json::Obj(x.into_iter().map(|(k, v)| (k, graph(v))).collect()),
-    }
-}
-
-fn number(x: f64) -> Json {
-    if x.fract() == 0.0 && x.abs() < 1e18 {
-        Json::Int(x as i128)
-    } else {
-        Json::Float(x)
     }
 }
 
@@ -186,7 +222,7 @@ impl JsonReader<'_> {
                     "null" => Json::Null,
                     "true" => Json::Bool(true),
                     "false" => Json::Bool(false),
-                    _ if word.contains(['.', 'e', 'E']) => number(word.parse().unwrap()),
+                    _ if word.contains(['.', 'e', 'E']) => Json::Float(word.parse().unwrap()),
                     _ => Json::Int(word.parse().unwrap()),
                 }
             }

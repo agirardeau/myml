@@ -611,7 +611,7 @@ fn split_flow_items<'t>(
         .collect()
 }
 
-fn parse_key(token: &str, line: usize, col: usize) -> Result<String, Error> {
+pub(crate) fn parse_key(token: &str, line: usize, col: usize) -> Result<String, Error> {
     if token == "<<" {
         return Err(Error::at("merge keys are unsupported", line, col));
     }
@@ -644,7 +644,7 @@ fn parse_key(token: &str, line: usize, col: usize) -> Result<String, Error> {
     }
 }
 
-pub(crate) fn valid_key(s: &str) -> bool {
+fn valid_key(s: &str) -> bool {
     !s.is_empty()
         && s.chars()
             .all(|c| c.is_alphanumeric() || "_-./$()~".contains(c))

@@ -515,8 +515,7 @@ class Parser:
         if _DECIMAL_RE.match(token):
             return float(token)
         if _EXP_RE.match(token):
-            number = float(token)
-            return int(number) if number.is_integer() else number
+            return float(token)
         if _SCI_RE.match(token):
             self._error(
                 "Scientific notation must use a normalized coefficient with 1 <= m < 10.",

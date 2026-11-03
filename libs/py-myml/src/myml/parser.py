@@ -503,9 +503,7 @@ class Parser:
         if _DECIMAL_RE.match(token):
             return ScalarNode(float(token), kind="number", style="plain", raw=token)
         if _EXP_RE.match(token):
-            number = float(token)
-            value = int(number) if number.is_integer() else number
-            return ScalarNode(value, kind="number", style="plain", raw=token)
+            return ScalarNode(float(token), kind="number", style="plain", raw=token)
         if _SCI_RE.match(token):
             self._error(
                 "Scientific notation must use a normalized coefficient with 1 <= m < 10.",

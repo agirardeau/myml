@@ -1,11 +1,19 @@
 //! An insertion-ordered string-keyed map for `Value` mappings.
 use crate::Value;
+use std::collections::HashMap;
+use std::fmt;
 use std::ops::Index;
 
+/// Mappings with at most this many entries find keys by scanning, which is faster than hashing at
+/// this size and avoids allocating an index for the many small mappings typical of documents.
+const INDEX_THRESHOLD: usize = 8;
+
 /// A mapping that keeps entries in insertion order. Equality ignores entry order.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Default)]
 pub struct Map {
     entries: Vec<(String, Value)>,
+    /// Entry positions by key, kept only while the mapping exceeds `INDEX_THRESHOLD` entries.
+    index: Option<HashMap<String, usize>>,
 }
 
 impl Map {
@@ -18,32 +26,50 @@ impl Map {
     pub fn is_empty(&self) -> bool {
         self.entries.is_empty()
     }
+    fn position(&self, key: &str) -> Option<usize> {
+        match &self.index {
+            Some(index) => index.get(key).copied(),
+            None => self.entries.iter().position(|(k, _)| k == key),
+        }
+    }
     pub fn get(&self, key: &str) -> Option<&Value> {
-        self.entries.iter().find(|(k, _)| k == key).map(|(_, v)| v)
+        self.position(key).map(|i| &self.entries[i].1)
     }
     pub fn get_mut(&mut self, key: &str) -> Option<&mut Value> {
-        self.entries
-            .iter_mut()
-            .find(|(k, _)| k == key)
-            .map(|(_, v)| v)
+        self.position(key).map(|i| &mut self.entries[i].1)
     }
     pub fn contains_key(&self, key: &str) -> bool {
         self.get(key).is_some()
     }
     /// Inserts an entry. An existing key keeps its position and its previous value is returned.
     pub fn insert(&mut self, key: String, value: Value) -> Option<Value> {
-        match self.get_mut(&key) {
-            Some(slot) => Some(std::mem::replace(slot, value)),
-            None => {
-                self.entries.push((key, value));
-                None
-            }
+        if let Some(i) = self.position(&key) {
+            return Some(std::mem::replace(&mut self.entries[i].1, value));
         }
+        let i = self.entries.len();
+        if let Some(index) = &mut self.index {
+            index.insert(key.clone(), i);
+        }
+        self.entries.push((key, value));
+        if self.index.is_none() && self.entries.len() > INDEX_THRESHOLD {
+            self.rebuild_index();
+        }
+        None
     }
     /// Removes an entry, preserving the order of the remaining entries.
     pub fn remove(&mut self, key: &str) -> Option<Value> {
-        let i = self.entries.iter().position(|(k, _)| k == key)?;
-        Some(self.entries.remove(i).1)
+        let i = self.position(key)?;
+        let (_, value) = self.entries.remove(i);
+        if self.entries.len() <= INDEX_THRESHOLD {
+            self.index = None;
+        } else {
+            self.rebuild_index();
+        }
+        Some(value)
+    }
+    fn rebuild_index(&mut self) {
+        let index = self.entries.iter().enumerate();
+        self.index = Some(index.map(|(i, (k, _))| (k.clone(), i)).collect());
     }
     pub fn iter(&self) -> impl Iterator<Item = (&String, &Value)> {
         self.entries.iter().map(|(k, v)| (k, v))
@@ -53,6 +79,12 @@ impl Map {
     }
     pub fn values(&self) -> impl Iterator<Item = &Value> {
         self.entries.iter().map(|(_, v)| v)
+    }
+}
+
+impl fmt::Debug for Map {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_map().entries(self.iter()).finish()
     }
 }
 

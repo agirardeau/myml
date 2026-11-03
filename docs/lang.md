@@ -125,6 +125,10 @@ The following numeric restrictions apply:
 * Underscore digit separators are not allowed
 * Octal notation is not supported
 
+Integer and hexadecimal integer forms are integers. Fixed-point decimal,
+exponential, infinity, and NaN forms are floats, as in the YAML 1.2 core schema,
+so `1e6` is a float.
+
 In hexadecimal notation, `x` is lowercase. Hex digits may use uppercase or
 lowercase letters.
 
@@ -258,8 +262,32 @@ The standard serialized form uses:
 * Block-style containers only
 * Compact block mappings within sequences, with the first mapping entry on the
   same line as the `-` sequence marker
+* Two spaces of indentation per nesting level
+* `{}` and `[]` for empty mappings and sequences
+* Mapping entries in the order the serialized value provides them
 * Unquoted keys whenever possible
-* Unquoted string scalars whenever possible
+* Unquoted string scalars whenever possible, in standard mode
+
+A string is a `|` block scalar string when it ends with exactly one line break,
+contains no tabs or characters that must be escaped, its first line with a
+non-space character does not begin with a space, and all lines before that
+line are empty. Its content lines are indented two spaces beyond the key or `-`
+that introduces it, and its empty lines contain no spaces. This applies in both modes.
+
+Other strings that are not unquoted are double-quoted. Double-quoted strings
+escape `"`, `\`, backspace, tab, line feed, form feed, and carriage return as
+`\"`, `\\`, `\b`, `\t`, `\n`, `\f`, and `\r`. Other characters that may not
+appear unescaped, and the no-break space (U+00A0), are written as `\u` with four
+lowercase hexadecimal digits. All other characters are written unescaped.
+
+Integers are written in decimal. Floats are written as `.inf`, `-.inf`, `.nan`,
+or with the fewest significant digits that read back as the same value. They use
+fixed-point decimal notation unless that would need more than three zeros
+between the significant digits and the decimal point, in which case they use
+exponential notation. A fixed-point float with no fractional digits ends in
+`.0`, so a float never reads back as an integer. For example, the float
+1000000 is `1e6`, the integer 1000000 is `1000000`, and the floats 1000, 0.0001,
+and 0.00001 are `1000.0`, `0.0001`, and `1e-5`.
 
 ## Modes
 

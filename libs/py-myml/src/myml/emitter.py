@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import math
 import re
+from decimal import Decimal
 from typing import Any
 
 from .errors import ParseError
@@ -12,6 +13,9 @@ from .parser import Parser, _is_allowed_raw
 from .roundtrip import RoundTripMapping, RoundTripSequence, coerce_node
 
 _SAFE_KEY_RE = re.compile(r"^[\w./$()~\-]+$", re.UNICODE)
+
+# Fixed-point zeros beyond which a finite float is written in exponential notation instead.
+_MAX_PADDING_ZEROS = 3
 
 
 def infer_scalar_kind(value: Any) -> str:
@@ -130,7 +134,7 @@ def _render_sequence(node: SequenceNode, *, indent: int, mode: str, roundtrip: b
             lines.append(header)
             lines.extend(_indent_block_lines(segments, indent + 2))
             continue
-        if isinstance(value, MappingNode) and value.compact and len(value.entries) == 1:
+        if isinstance(value, MappingNode) and value.compact and len(value.entries) == 1 and not _is_block_scalar(value.entries[0].value):
             entry = value.entries[0]
             lines.extend(_indent_comment_lines(entry.before, indent))
             scalar = _render_scalar(entry.value, mode=mode, in_flow=False, preserve_style=roundtrip and isinstance(entry.value, ScalarNode) and not entry.value.dirty)
@@ -139,7 +143,7 @@ def _render_sequence(node: SequenceNode, *, indent: int, mode: str, roundtrip: b
                 line = f"{line} {item.inline_comment}"
             lines.append(line)
             continue
-        if isinstance(value, MappingNode) and len(value.entries) == 1 and all(isinstance(entry.value, ScalarNode) for entry in value.entries):
+        if isinstance(value, MappingNode) and len(value.entries) == 1 and isinstance(value.entries[0].value, ScalarNode) and not _is_block_scalar(value.entries[0].value):
             entry = value.entries[0]
             lines.extend(_indent_comment_lines(entry.before, indent))
             scalar = _render_scalar(entry.value, mode=mode, in_flow=False, preserve_style=roundtrip and not entry.value.dirty)
@@ -247,11 +251,33 @@ def _render_number(value: Any) -> str:
             return ".nan"
         return ".inf" if value > 0 else "-.inf"
     if isinstance(value, float):
-        text = format(value, "g")
-        if "E" in text:
-            text = text.lower()
-        return text
+        return _render_float(value)
     return str(value)
+
+
+def _render_float(value: float) -> str:
+    """Render a finite float with the fewest significant digits that read back as the same value.
+
+    Fixed-point notation is used unless it would need more than `_MAX_PADDING_ZEROS` zeros between
+    the significant digits and the decimal point, in which case normalized exponential notation is
+    used. Either way the text reads back as a float, never as an integer.
+    """
+    sign = "-" if math.copysign(1.0, value) < 0 else ""
+    if value == 0:
+        return f"{sign}0.0"
+    _, digit_tuple, exponent = Decimal(repr(abs(value))).normalize().as_tuple()
+    digits = "".join(map(str, digit_tuple))
+    count = len(digits)
+    exp = count - 1 + exponent
+    padding = -exp - 1 if exp < 0 else max(exp - count + 1, 0)
+    if padding > _MAX_PADDING_ZEROS:
+        mantissa = digits if count == 1 else f"{digits[0]}.{digits[1:]}"
+        return f"{sign}{mantissa}e{exp}"
+    if exp < 0:
+        return f"{sign}0.{'0' * padding}{digits}"
+    if exp + 1 >= count:
+        return f"{sign}{digits}{'0' * padding}.0"
+    return f"{sign}{digits[:exp + 1]}.{digits[exp + 1:]}"
 
 
 def _render_string(text: str, *, mode: str, in_flow: bool, style: str | None) -> str:
@@ -299,8 +325,8 @@ def _block_scalar_lines(node: ScalarNode) -> list[str] | None:
     """Return the content lines of `node` as a `|` or `>` block scalar, or None if that style cannot represent it.
 
     Block scalars use clip chomping and take their indentation from the first non-blank line, so the
-    value must end with exactly one line break and its first non-blank line may not start with
-    whitespace. Folded lines are the inverse of parser folding: a line break between two lines needs
+    value must end with exactly one line break, its first non-blank line may not start with
+    whitespace, and the blank lines before that one must be empty. Folded lines are the inverse of parser folding: a line break between two lines needs
     an empty line unless one of them is more indented.
     """
     if node.style not in {"literal", "folded"}:
@@ -308,11 +334,11 @@ def _block_scalar_lines(node: ScalarNode) -> list[str] | None:
     text = str(node.value)
     if not text.endswith("\n") or text.endswith("\n\n"):
         return None
-    if any(ord(char) < 32 and char not in "\t\n" or char in "\x7f\x85\u2028\u2029" for char in text):
+    if any(char != "\n" and not _is_allowed_raw(char) for char in text):
         return None
     segments = text[:-1].split("\n")
-    first = next((segment for segment in segments if segment.strip()), None)
-    if first is None or first[0] in " \t":
+    first = next((index for index, segment in enumerate(segments) if segment.strip()), None)
+    if first is None or segments[first][0] in " \t" or any(segments[:first]):
         return None
     if node.style == "literal":
         return segments
@@ -329,6 +355,10 @@ def _block_scalar_lines(node: ScalarNode) -> list[str] | None:
         previous = segment
         empty = 0
     return lines
+
+
+def _is_block_scalar(node: Node) -> bool:
+    return isinstance(node, ScalarNode) and _block_scalar_lines(node) is not None
 
 
 def _indent_block_lines(lines: list[str], indent: int) -> list[str]:
