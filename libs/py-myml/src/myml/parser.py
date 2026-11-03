@@ -135,36 +135,38 @@ class Parser:
             if raw == "-" or raw.startswith("- "):
                 self._error("Sequence item is not valid in a mapping position.", code="malformed-mapping", line=line.number, column=indent + 1)
             body, comment = self._split_comment(raw)
-            separator = self._find_mapping_separator(body)
-            if separator is None:
-                self._error("Malformed mapping entry.", code="malformed-mapping", line=line.number, column=indent + 1)
-            key_text = body[:separator].rstrip()
-            value_text = body[separator + 1 :].lstrip()
-            key = self._parse_key(key_text, line.number, indent + body.index(key_text) + 1)
-            if key == "<<":
-                self._error("Merge keys are not supported.", code="unsupported-merge-key", line=line.number, column=indent + 1, category="unsupported_feature")
-            if key in seen_keys:
-                self._error("Duplicate mapping key.", code="duplicate-key", line=line.number, column=indent + 1, category="semantic_error")
-            seen_keys.add(key)
             self.index += 1
-            inline_comment = comment
-            if value_text in {"|", ">"}:
-                value = self._parse_block_scalar(value_text, indent, line.number)
-            elif not value_text:
-                if self._peek_significant_indent() <= indent:
-                    self._error("Mapping entries must have a value.", code="missing-value", line=line.number, column=indent + separator + 2)
-                value = self._parse_block(self._peek_significant_indent())
-            else:
-                start_column = indent + separator + 2 + (len(body[separator + 1 :]) - len(body[separator + 1 :].lstrip()))
-                if self.index < len(self.lines):
-                    next_line = self.lines[self.index]
-                    if self._indentation(next_line) > indent:
-                        self._error_if_multiline_scalar_continuation(next_line, indent)
-                value = self._parse_inline_value(value_text, line.number, start_column, in_flow=False)
-            entries.append(MappingEntry(key=key, value=value, before=pending_before, inline_comment=inline_comment))
+            key, value = self._parse_mapping_entry(body, indent, line, seen_keys)
+            entries.append(MappingEntry(key=key, value=value, before=pending_before, inline_comment=comment))
             pending_before = []
         node = MappingNode(entries, style="block", trailing_lines=pending_before)
         return node
+
+    def _parse_mapping_entry(self, body: str, indent: int, line: Line, seen_keys: set[str]):
+        """Parse one block mapping entry whose key starts at column `indent` of `line`, the line before `self.index`."""
+        separator = self._find_mapping_separator(body)
+        if separator is None:
+            self._error("Malformed mapping entry.", code="malformed-mapping", line=line.number, column=indent + 1)
+        key_text = body[:separator].rstrip()
+        value_text = body[separator + 1 :].lstrip()
+        key = self._parse_key(key_text, line.number, indent + body.index(key_text) + 1)
+        if key == "<<":
+            self._error("Merge keys are not supported.", code="unsupported-merge-key", line=line.number, column=indent + 1, category="unsupported_feature")
+        if key in seen_keys:
+            self._error("Duplicate mapping key.", code="duplicate-key", line=line.number, column=indent + 1, category="semantic_error")
+        seen_keys.add(key)
+        if value_text in {"|", ">"}:
+            return key, self._parse_block_scalar(value_text, indent, line.number)
+        if not value_text:
+            if self._peek_significant_indent() <= indent:
+                self._error("Mapping entries must have a value.", code="missing-value", line=line.number, column=indent + separator + 2)
+            return key, self._parse_block(self._peek_significant_indent())
+        start_column = indent + separator + 2 + (len(body[separator + 1 :]) - len(body[separator + 1 :].lstrip()))
+        if self.index < len(self.lines):
+            next_line = self.lines[self.index]
+            if self._indentation(next_line) > indent:
+                self._error_if_multiline_scalar_continuation(next_line, indent)
+        return key, self._parse_inline_value(value_text, line.number, start_column, in_flow=False)
 
     def _parse_sequence(self, indent: int):
         items: list[SequenceItem] = []
@@ -196,11 +198,16 @@ class Parser:
             else:
                 inline_map_separator = self._find_mapping_separator(token)
                 if inline_map_separator is not None and not token.startswith("{"):
-                    value = self._parse_inline_mapping(token, line.number, indent + 3)
+                    # The item is a block mapping whose keys align with its first key.
+                    key_indent = indent + 1 + len(raw[1:]) - len(raw[1:].lstrip())
+                    existing_keys: set[str] = set()
+                    key, entry_value = self._parse_mapping_entry(item_body, key_indent, line, existing_keys)
+                    first_entry = MappingEntry(key=key, value=entry_value)
+                    compact = isinstance(entry_value, ScalarNode) and entry_value.style not in {"literal", "folded"}
+                    value = MappingNode([first_entry], style="block", compact=compact)
                     continuation_indent = self._peek_significant_indent()
                     if continuation_indent > indent:
                         continuation = self._parse_mapping(continuation_indent)
-                        existing_keys = {entry.key for entry in value.entries}
                         for entry in continuation.entries:
                             if entry.key in existing_keys:
                                 self._error(
@@ -222,20 +229,6 @@ class Parser:
             items.append(SequenceItem(value=value, before=pending_before, inline_comment=comment))
             pending_before = []
         return SequenceNode(items, style="block", trailing_lines=pending_before)
-
-    def _parse_inline_mapping(self, text: str, line: int, column: int):
-        separator = self._find_mapping_separator(text)
-        if separator is None:
-            self._error("Malformed mapping entry.", code="malformed-mapping", line=line, column=column)
-        key_text = text[:separator].rstrip()
-        value_text = text[separator + 1 :].lstrip()
-        key = self._parse_key(key_text, line, column)
-        if key == "<<":
-            self._error("Merge keys are not supported.", code="unsupported-merge-key", line=line, column=column, category="unsupported_feature")
-        if not value_text:
-            self._error("Inline mapping entries must have a value.", code="missing-value", line=line, column=column + separator + 1)
-        value = self._parse_inline_value(value_text, line, column + separator + 1, in_flow=False)
-        return MappingNode([MappingEntry(key=key, value=value)], style="block", compact=True)
 
     def _parse_block_scalar(self, indicator: str, parent_indent: int, header_line: int):
         next_indent = self._peek_significant_indent()

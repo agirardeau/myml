@@ -1,0 +1,32 @@
+{
+  "summary": "A sequence item's first key may have a nested block value",
+  "tags": [
+    "block",
+    "mapping",
+    "sequence",
+    "nesting",
+    "block-scalar"
+  ],
+  "spec_refs": [
+    "grammar.block-style-mappings",
+    "grammar.block-style-sequences",
+    "containers.block-style"
+  ],
+  "emit_profiles": {
+    "standard": {
+      "mode": "standard",
+      "expect_output": "expected_emit_standard.yaml"
+    },
+    "strict": {
+      "mode": "strict",
+      "expect_output": "expected_emit_strict.yaml"
+    }
+  },
+  "notes": "The first key after `- ` starts a block mapping aligned with that key, so its value may continue as an indented mapping, sequence, or block scalar.",
+  "parse_profiles": {
+    "baseline": {
+      "modes": "all",
+      "expect_node_graph": "expected_node_graph.json"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "items": [
+    { "mapping": { "inner": 1 }, "after": 2 },
+    { "sequence": [3] },
+    { "deep": { "inner": { "leaf": 4 } } },
+    { "text": "line\n" }
+  ]
+}
