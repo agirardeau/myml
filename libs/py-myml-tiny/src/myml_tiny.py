@@ -109,6 +109,7 @@ class Parser:
         self.mode = _validate_mode(mode)
 
     def parse(self):
+        self._reject_document_markers()
         self._consume_trivia()
         if self.index >= len(self.lines):
             return None
@@ -118,6 +119,19 @@ class Parser:
             line = self.lines[self.index]
             self._error("Unexpected content after document root.", code="malformed-document", line=line.number, column=1)
         return root
+
+    def _reject_document_markers(self) -> None:
+        # Block scalar content is always indented, so a marker at column 1 is never content.
+        for line in self.lines:
+            body, _comment = self._split_comment(line.text)
+            if body in {"---", "..."} or body.startswith(("--- ", "... ")):
+                self._error(
+                    "Document markers are not supported.",
+                    code="unsupported-document-marker",
+                    line=line.number,
+                    column=1,
+                    category="unsupported_feature",
+                )
 
     def _consume_trivia(self) -> None:
         while self.index < len(self.lines):

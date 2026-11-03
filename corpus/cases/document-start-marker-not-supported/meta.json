@@ -1,0 +1,23 @@
+{
+  "summary": "Document start markers are rejected",
+  "tags": [
+    "unsupported",
+    "document-marker"
+  ],
+  "spec_refs": [
+    "unsupported.document-markers"
+  ],
+  "notes": "A Myml file is a single document without `---` or `...` markers. A lone `---` is an empty YAML document, not the string `---`.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "unsupported-document-marker",
+        "category": "unsupported_feature",
+        "line": 1,
+        "column": 1
+      }
+    }
+  },
+  "emit_profiles": {}
+}

@@ -60,6 +60,7 @@ class Parser:
         self.roundtrip = roundtrip
 
     def parse(self):
+        self._reject_document_markers()
         leading = self._consume_trivia([])
         if self.index >= len(self.lines):
             document = DocumentNode(ScalarNode(None, kind="null", style="plain", raw="null"), self.text, self.mode)
@@ -74,6 +75,7 @@ class Parser:
         return wrap_node(root, document) if self.roundtrip else to_plain_data(root)
 
     def parse_document(self) -> DocumentNode:
+        self._reject_document_markers()
         leading = self._consume_trivia([])
         if self.index >= len(self.lines):
             root = ScalarNode(None, kind="null", style="plain", raw="null")
@@ -84,6 +86,19 @@ class Parser:
             line = self.lines[self.index]
             self._error("Unexpected content after document root.", code="malformed-document", line=line.number, column=1)
         return DocumentNode(root, self.text, self.mode, leading_lines=leading, trailing_lines=trailing)
+
+    def _reject_document_markers(self) -> None:
+        # Block scalar content is always indented, so a marker at column 1 is never content.
+        for line in self.lines:
+            body, _comment = self._split_comment(line.text)
+            if body in {"---", "..."} or body.startswith(("--- ", "... ")):
+                self._error(
+                    "Document markers are not supported.",
+                    code="unsupported-document-marker",
+                    line=line.number,
+                    column=1,
+                    category="unsupported_feature",
+                )
 
     def _consume_trivia(self, acc: list[str]) -> list[str]:
         while self.index < len(self.lines):

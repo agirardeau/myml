@@ -198,6 +198,7 @@ YAML 1.2 constructs outside this specification result in errors. These include:
 
 * Non-string keys
 * Multiline strings other than block scalar strings introduced by `|` or `>`
+* Document markers `---` and `...`, including multiple documents
 * Anchors
 * Tags
 * Merge keys
