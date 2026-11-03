@@ -1,6 +1,5 @@
 //! Line-oriented Myml parser producing a `Value`.
-use crate::{Error, Mode, Value};
-use std::collections::BTreeMap;
+use crate::{Error, Map, Mode, Value};
 
 pub(crate) fn parse(text: &str, mode: Mode) -> Result<Value, Error> {
     let text = text.strip_prefix('\u{feff}').unwrap_or(text);
@@ -97,7 +96,7 @@ impl<'a> Parser<'a> {
             return self.parse_sequence(indent);
         }
         if find_mapping_separator(body, false).is_some() {
-            let mut map = BTreeMap::new();
+            let mut map = Map::new();
             self.parse_mapping_into(indent, &mut map)?;
             return Ok(Value::Mapping(map));
         }
@@ -135,11 +134,7 @@ impl<'a> Parser<'a> {
         Ok(())
     }
 
-    fn parse_mapping_into(
-        &mut self,
-        indent: usize,
-        map: &mut BTreeMap<String, Value>,
-    ) -> Result<(), Error> {
+    fn parse_mapping_into(&mut self, indent: usize, map: &mut Map) -> Result<(), Error> {
         loop {
             self.consume_trivia();
             let n = self.index;
@@ -181,7 +176,7 @@ impl<'a> Parser<'a> {
         body: &str,
         indent: usize,
         n: usize,
-        map: &mut BTreeMap<String, Value>,
+        map: &mut Map,
     ) -> Result<(), Error> {
         let line = n + 1;
         let sep = find_mapping_separator(body, false)
@@ -261,7 +256,7 @@ impl<'a> Parser<'a> {
             } else if find_mapping_separator(token, false).is_some() && !token.starts_with('{') {
                 // The item is a block mapping whose keys align with its first key.
                 let key_indent = indent + 1 + after.len() - after.trim_start().len();
-                let mut map = BTreeMap::new();
+                let mut map = Map::new();
                 self.parse_mapping_entry(item_body, key_indent, n, &mut map)?;
                 if self.peek_indent()?.is_some_and(|next| next > indent) {
                     self.parse_mapping_into(key_indent, &mut map)?;
@@ -393,7 +388,7 @@ impl<'a> Parser<'a> {
 
     fn flow_mapping(&self, token: &str, line: usize, col: usize) -> Result<Value, Error> {
         let commas = scan_flow_delimiters(token, line, col)?;
-        let mut map = BTreeMap::new();
+        let mut map = Map::new();
         if token[1..token.len() - 1].trim().is_empty() {
             return Ok(Value::Mapping(map));
         }

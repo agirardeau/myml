@@ -2,14 +2,16 @@
 //! Dynamic integers are limited to `i64` and `u64`; other numbers use `f64`.
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use std::collections::BTreeMap;
 use std::fmt;
 use std::io::{Read, Write};
 
 mod de;
 mod emit;
+mod map;
 mod parse;
 mod ser;
+
+pub use map::Map;
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub enum Mode {
@@ -27,7 +29,8 @@ pub enum Value {
     F64(f64),
     String(String),
     Sequence(Vec<Value>),
-    Mapping(BTreeMap<String, Value>),
+    /// A mapping whose entries keep source or insertion order.
+    Mapping(Map),
 }
 
 #[derive(Debug)]
@@ -94,6 +97,11 @@ impl Serialize for Value {
         }
     }
 }
+impl Serialize for Map {
+    fn serialize<S: Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        s.collect_map(self)
+    }
+}
 impl<'de> Deserialize<'de> for Value {
     fn deserialize<D: Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
         struct Visitor;
@@ -137,7 +145,7 @@ impl<'de> Deserialize<'de> for Value {
                 Ok(Value::Sequence(v))
             }
             fn visit_map<A: serde::de::MapAccess<'de>>(self, mut a: A) -> Result<Value, A::Error> {
-                let mut v = BTreeMap::new();
+                let mut v = Map::new();
                 while let Some((k, x)) = a.next_entry()? {
                     v.insert(k, x);
                 }

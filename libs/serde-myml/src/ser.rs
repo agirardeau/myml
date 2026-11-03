@@ -1,7 +1,6 @@
 //! Serializing Rust values into a `Value`.
-use crate::{Error, Value};
+use crate::{Error, Map as ValueMap, Value};
 use serde::ser::{self, Serialize};
-use std::collections::BTreeMap;
 
 pub(crate) struct ValueSerializer;
 
@@ -145,7 +144,7 @@ impl ser::Serializer for ValueSerializer {
 }
 
 fn tagged(variant: &str, content: Value) -> Value {
-    Value::Mapping(BTreeMap::from([(variant.to_string(), content)]))
+    Value::Mapping(ValueMap::from_iter([(variant.to_string(), content)]))
 }
 
 pub(crate) struct Seq(Vec<Value>);
@@ -197,7 +196,7 @@ impl ser::SerializeTupleVariant for TupleVariant {
 
 #[derive(Default)]
 pub(crate) struct Map {
-    entries: BTreeMap<String, Value>,
+    entries: ValueMap,
     key: Option<String>,
 }
 

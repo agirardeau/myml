@@ -71,7 +71,7 @@ fn enums_and_options_roundtrip() {
     let s = to_string(&shapes).unwrap();
     assert_eq!(
         s,
-        "- Empty\n- Circle: 1.5\n- Point:\n    - -1\n    - 2\n- Rect:\n    h: 4\n    w: 3\n"
+        "- Empty\n- Circle: 1.5\n- Point:\n    - -1\n    - 2\n- Rect:\n    w: 3\n    h: 4\n"
     );
     assert_eq!(from_str::<Vec<Shape>>(&s).unwrap(), shapes);
     let options: Vec<Option<u8>> = vec![Some(1), None];
@@ -93,6 +93,24 @@ fn block_scalars_clip_and_fold() {
         Value::String("one two\nthree\n  kept\nfour\n".into())
     );
 }
+#[derive(Serialize)]
+struct Unsorted {
+    zebra: u8,
+    apple: u8,
+}
+#[test]
+fn mappings_keep_original_key_order() {
+    assert_eq!(
+        to_string(&Unsorted { zebra: 1, apple: 2 }).unwrap(),
+        "zebra: 1\napple: 2\n"
+    );
+    for input in ["b: 1\na:\n  d: 2\n  c: 3\n", "{b: 1, a: {d: 2, c: 3}}\n"] {
+        let v = from_str::<Value>(input).unwrap();
+        assert_eq!(to_string(&v).unwrap(), "b: 1\na:\n  d: 2\n  c: 3\n");
+    }
+    let v = from_str::<Value>("- b: 1\n  a: 2\n").unwrap();
+    assert_eq!(to_string(&v).unwrap(), "- b: 1\n  a: 2\n");
+}
 #[test]
 fn keys_resolving_to_non_strings_are_rejected_and_quoted() {
     for input in ["1: a\n", "true: a\n", "null: a\n", "{1: a}\n"] {
@@ -100,7 +118,7 @@ fn keys_resolving_to_non_strings_are_rejected_and_quoted() {
     }
     let v = from_str::<Value>("\"1\": a\n\"true\": b\n\"<<\": c\n").unwrap();
     let s = to_string(&v).unwrap();
-    assert_eq!(s, "\"1\": a\n\"<<\": c\n\"true\": b\n");
+    assert_eq!(s, "\"1\": a\n\"true\": b\n\"<<\": c\n");
     assert_eq!(from_str::<Value>(&s).unwrap(), v);
 }
 #[test]

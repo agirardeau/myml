@@ -22,7 +22,7 @@
 - Scalar resolution follows the order in `docs/lang.md`.
 - YAML 1.1-ambiguous plain scalars that YAML 1.2 reads as strings are strings unless they match a supported Myml scalar form.
 - Plain scalars that the YAML 1.2 core schema resolves to numbers but that match no supported Myml numeric form are rejected.
-- Parsed mappings in `Value` are ordered by key, regardless of source order.
+- Parsed mappings in `Value` keep source key order.
 - Invalid input produces useful errors with line and column information when available and an indication of the relevant rule or syntax category.
 
 ### Requirement: Dynamic numbers use bounded Rust types
@@ -37,7 +37,6 @@
 
 - Emitted text is valid Myml in the selected mode and follows the serialization defaults in `docs/lang.md`.
 - Emission uses UTF-8 text, block-style containers, and compact block mappings within sequences.
-- Mapping entries are emitted in lexicographic key order by default, including when the caller's map or struct has another iteration order.
 - Keys and string scalars are unquoted when Myml permits them in `standard` mode.
 - String scalars are quoted in `strict` mode.
 - Infinity and NaN are emitted using the supported lowercase Myml literals.

@@ -15,7 +15,7 @@ let strict = to_string_with_mode(&config, Mode::Strict)?;
 # Ok::<(), serde_myml::Error>(())
 ```
 
-The public API also includes `from_reader`, `to_writer`, and mode variants of each function. `Value` is a dynamic Serde value with lexicographically ordered mapping keys.
+The public API also includes `from_reader`, `to_writer`, and mode variants of each function. `Value` is a dynamic Serde value whose mappings keep source or insertion key order. Emission writes mapping keys in the order the value provides them.
 
 Dynamic integers use `i64` or `u64`, and non-integer numbers use `f64`. Integer literals outside those ranges produce a range error. Infinity and NaN use `.inf`, `-.inf`, and `.nan`.
 
