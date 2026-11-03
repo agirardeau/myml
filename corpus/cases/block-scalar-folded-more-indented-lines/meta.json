@@ -1,0 +1,29 @@
+{
+  "summary": "Folding keeps line breaks next to more-indented lines",
+  "tags": [
+    "strings",
+    "block-scalar",
+    "folded",
+    "indentation"
+  ],
+  "spec_refs": [
+    "grammar.block-scalar-strings"
+  ],
+  "notes": "Lines indented beyond the content indentation keep their extra spaces and are not folded into neighboring lines.",
+  "parse_profiles": {
+    "baseline": {
+      "modes": "all",
+      "expect_node_graph": "expected_node_graph.json"
+    }
+  },
+  "emit_profiles": {
+    "standard": {
+      "mode": "standard",
+      "expect_output": "expected_emit_standard.yaml"
+    },
+    "strict": {
+      "mode": "strict",
+      "expect_output": "expected_emit_strict.yaml"
+    }
+  }
+}

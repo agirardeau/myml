@@ -270,7 +270,13 @@ impl<'a> Parser<'a> {
         parent_indent: usize,
         header_line: usize,
     ) -> Result<Value, Error> {
-        let content_indent = match self.peek_indent()? {
+        // Block scalar content indentation comes from the next non-blank line, which may begin with
+        // `#` or, after the indentation, a tab.
+        let spaces = |text: &str| text.bytes().take_while(|&b| b == b' ').count();
+        let next = self.lines[self.index..]
+            .iter()
+            .find(|text| !text.trim().is_empty());
+        let content_indent = match next.map(|text| spaces(text)) {
             Some(next) if next > parent_indent => next,
             _ => {
                 return Err(Error::at(
@@ -284,8 +290,13 @@ impl<'a> Parser<'a> {
         while self.index < self.lines.len() {
             let text = self.lines[self.index];
             if text.trim().is_empty() {
-                pieces.push("");
-            } else if text.bytes().take_while(|&b| b == b' ').count() < content_indent {
+                // Whitespace beyond the content indentation is content, even on an otherwise blank line.
+                pieces.push(if spaces(text) >= content_indent {
+                    &text[content_indent..]
+                } else {
+                    ""
+                });
+            } else if spaces(text) < content_indent {
                 // Tabs may follow the content indentation, but not form part of it.
                 self.indentation(self.index)?;
                 break;
@@ -313,14 +324,11 @@ impl<'a> Parser<'a> {
                 breaks += 1;
                 continue;
             }
+            // Line breaks next to more-indented lines are not folded.
+            let spaced = |line: &str| line.starts_with([' ', '\t']);
             match prev {
-                // Lines with extra indentation are not folded.
-                Some(p) if breaks == 0 && !p.starts_with(' ') && !piece.starts_with(' ') => {
-                    out.push(' ')
-                }
-                Some(p) if p.starts_with(' ') || piece.starts_with(' ') => {
-                    out.push_str(&"\n".repeat(breaks + 1))
-                }
+                Some(p) if spaced(p) || spaced(piece) => out.push_str(&"\n".repeat(breaks + 1)),
+                Some(_) if breaks == 0 => out.push(' '),
                 _ => out.push_str(&"\n".repeat(breaks)),
             }
             out.push_str(piece);

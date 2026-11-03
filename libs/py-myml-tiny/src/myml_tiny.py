@@ -74,6 +74,31 @@ def _validate_mode(mode: str) -> str:
     return mode
 
 
+def _fold_block_lines(lines: list[str]) -> str:
+    """Join `>` block scalar lines as YAML folding does.
+
+    A single line break between two lines becomes a space, each empty line between them becomes a
+    line break, and breaks next to more-indented lines are kept.
+    """
+    parts: list[str] = []
+    breaks = 0
+    previous: str | None = None
+    for line in lines:
+        if line == "":
+            breaks += 1
+            continue
+        if previous is None:
+            parts.append("\n" * breaks)
+        elif previous[0] in " \t" or line[0] in " \t":
+            parts.append("\n" * (breaks + 1))
+        else:
+            parts.append("\n" * breaks if breaks else " ")
+        parts.append(line)
+        previous = line
+        breaks = 0
+    return "".join(parts) + "\n"
+
+
 class Parser:
     def __init__(self, text: str, *, mode: str = "standard") -> None:
         self.text = text
@@ -250,38 +275,29 @@ class Parser:
         return result
 
     def _parse_block_scalar(self, indicator: str, parent_indent: int, header_line: int) -> str:
-        next_indent = self._peek_significant_indent()
+        next_indent = self._peek_block_scalar_indent()
         if next_indent <= parent_indent:
             self._error("Block scalar requires indented content.", code="missing-value", line=header_line, column=parent_indent + 1)
         lines: list[str] = []
         while self.index < len(self.lines):
             line = self.lines[self.index]
             if self._is_blank(line.text):
-                lines.append("")
+                # Whitespace beyond the content indentation is content, even on an otherwise blank line.
+                lines.append(line.text[next_indent:] if line.text.startswith(" " * next_indent) else "")
                 self.index += 1
                 continue
-            actual = self._indentation(line)
-            if actual < next_indent:
-                break
-            if actual < parent_indent:
+            if len(line.text) - len(line.text.lstrip(" ")) < next_indent:
+                # Tabs may follow the content indentation, but not form part of it.
+                self._indentation(line)
                 break
             lines.append(line.text[next_indent:])
             self.index += 1
+        # Clip chomping: trailing empty lines are not part of the value.
+        while lines and lines[-1] == "":
+            lines.pop()
         if indicator == "|":
-            return "".join(f"{piece}\n" for piece in lines)
-        paragraphs: list[str] = []
-        current: list[str] = []
-        for piece in lines:
-            if piece == "":
-                if current:
-                    paragraphs.append(" ".join(current))
-                    current = []
-                paragraphs.append("")
-            else:
-                current.append(piece)
-        if current:
-            paragraphs.append(" ".join(current))
-        return "\n".join(paragraphs).rstrip("\n") + "\n"
+            return "".join(f"{line}\n" for line in lines)
+        return _fold_block_lines(lines)
 
     def _parse_inline_value(self, token: str, line: int, column: int, *, in_flow: bool):
         if token.startswith("&") or token.startswith("*"):
@@ -606,6 +622,16 @@ class Parser:
             if char == "#" and (index == 0 or text[index - 1] == " "):
                 return text[:index].rstrip(), text[index:]
         return text.rstrip(), None
+
+    def _peek_block_scalar_indent(self) -> int:
+        """Leading spaces of the next non-blank line, which may begin with `#` or a tab as block scalar content."""
+        probe = self.index
+        while probe < len(self.lines) and self._is_blank(self.lines[probe].text):
+            probe += 1
+        if probe == len(self.lines):
+            return -1
+        text = self.lines[probe].text
+        return len(text) - len(text.lstrip(" "))
 
     def _peek_significant_indent(self) -> int:
         probe = self.index

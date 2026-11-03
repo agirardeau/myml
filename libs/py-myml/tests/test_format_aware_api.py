@@ -26,6 +26,24 @@ class FormatAwareApiTests(unittest.TestCase):
 
         self.assertEqual(dumps(document, roundtrip=True), "name: hello # updated\n")
 
+    def test_edited_document_reemits_block_scalars_with_their_values(self) -> None:
+        text = "folded: >\n  one\n  two\n\n  three\n    kept\n  four\nliteral: |\n  a\n\n  b\nother: x\n"
+        document = loads(text, roundtrip=True)
+        document["other"] = "y"
+        emitted = dumps(document, roundtrip=True)
+
+        self.assertEqual(
+            emitted,
+            "folded: >\n  one two\n\n  three\n    kept\n  four\nliteral: |\n  a\n\n  b\nother: y\n",
+        )
+        self.assertEqual(loads(emitted), {**loads(text), "other": "y"})
+
+    def test_values_a_block_scalar_cannot_represent_are_quoted(self) -> None:
+        document = loads("text: |\n  a\n", roundtrip=True)
+        document["text"] = "trailing\n\n"
+
+        self.assertEqual(dumps(document, roundtrip=True), 'text: "trailing\\n\\n"\n')
+
     def test_sequence_entry_accessor_updates_item_comments(self) -> None:
         document = loads("- alpha # first\n", roundtrip=True)
 

@@ -49,11 +49,9 @@ def _as_document(value: Any, *, mode: str) -> DocumentNode:
 
 def _render_node(node: Node, *, indent: int, mode: str, roundtrip: bool, in_sequence: bool) -> list[str]:
     if isinstance(node, ScalarNode):
-        if node.style in {"literal", "folded"}:
+        if (segments := _block_scalar_lines(node)) is not None:
             indicator = "|" if node.style == "literal" else ">"
-            lines = [indicator]
-            lines.extend("  " + segment for segment in _render_block_scalar_lines(str(node.value)))
-            return lines
+            return [indicator, *_indent_block_lines(segments, 2)]
         return [_render_scalar(node, mode=mode, in_flow=False, preserve_style=roundtrip and not node.dirty)]
     if isinstance(node, MappingNode):
         if node.style == "flow" and roundtrip:
@@ -75,14 +73,13 @@ def _render_mapping(node: MappingNode, *, indent: int, mode: str, roundtrip: boo
         key = _render_key(entry.key)
         value = entry.value
         prefix = " " * indent
-        if isinstance(value, ScalarNode) and value.style in {"literal", "folded"}:
+        if isinstance(value, ScalarNode) and (segments := _block_scalar_lines(value)) is not None:
             indicator = "|" if value.style == "literal" else ">"
             header = f"{prefix}{key}: {indicator}"
             if entry.inline_comment:
                 header = f"{header} {entry.inline_comment}"
             lines.append(header)
-            for segment in _render_block_scalar_lines(str(value.value)):
-                lines.append(" " * (indent + 2) + segment)
+            lines.extend(_indent_block_lines(segments, indent + 2))
             continue
         if isinstance(value, MappingNode) and value.compact and len(value.entries) == 1:
             compact_entry = value.entries[0]
@@ -125,14 +122,13 @@ def _render_sequence(node: SequenceNode, *, indent: int, mode: str, roundtrip: b
         lines.extend(_indent_comment_lines(item.before, indent))
         prefix = " " * indent + "-"
         value = item.value
-        if isinstance(value, ScalarNode) and value.style in {"literal", "folded"}:
+        if isinstance(value, ScalarNode) and (segments := _block_scalar_lines(value)) is not None:
             indicator = "|" if value.style == "literal" else ">"
             header = f"{prefix} {indicator}"
             if item.inline_comment:
                 header = f"{header} {item.inline_comment}"
             lines.append(header)
-            for segment in _render_block_scalar_lines(str(value.value)):
-                lines.append(" " * (indent + 2) + segment)
+            lines.extend(_indent_block_lines(segments, indent + 2))
             continue
         if isinstance(value, MappingNode) and value.compact and len(value.entries) == 1:
             entry = value.entries[0]
@@ -298,10 +294,41 @@ def _single_quote_string(text: str) -> str:
     return "'" + text.replace("'", "''") + "'"
 
 
-def _render_block_scalar_lines(text: str) -> list[str]:
-    if text == "":
-        return [""]
-    pieces = text.split("\n")
-    if pieces and pieces[-1] == "":
-        pieces = pieces[:-1]
-    return pieces
+def _block_scalar_lines(node: ScalarNode) -> list[str] | None:
+    """Return the content lines of `node` as a `|` or `>` block scalar, or None if that style cannot represent it.
+
+    Block scalars use clip chomping and take their indentation from the first non-blank line, so the
+    value must end with exactly one line break and its first non-blank line may not start with
+    whitespace. Folded lines are the inverse of parser folding: a line break between two lines needs
+    an empty line unless one of them is more indented.
+    """
+    if node.style not in {"literal", "folded"}:
+        return None
+    text = str(node.value)
+    if not text.endswith("\n") or text.endswith("\n\n"):
+        return None
+    if any(ord(char) < 32 and char not in "\t\n" or char in "\x7f\x85\u2028\u2029" for char in text):
+        return None
+    segments = text[:-1].split("\n")
+    first = next((segment for segment in segments if segment.strip()), None)
+    if first is None or first[0] in " \t":
+        return None
+    if node.style == "literal":
+        return segments
+    lines: list[str] = []
+    empty = 0
+    previous: str | None = None
+    for segment in segments:
+        if segment == "":
+            empty += 1
+            continue
+        spaced = previous is not None and (previous[0] in " \t" or segment[0] in " \t")
+        lines.extend([""] * (empty + 1 if previous is not None and not spaced else empty))
+        lines.append(segment)
+        previous = segment
+        empty = 0
+    return lines
+
+
+def _indent_block_lines(lines: list[str], indent: int) -> list[str]:
+    return [" " * indent + line if line else "" for line in lines]

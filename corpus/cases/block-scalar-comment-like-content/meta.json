@@ -1,0 +1,31 @@
+{
+  "summary": "Block scalar content may begin with `#` or contain a tab after its indentation",
+  "tags": [
+    "strings",
+    "block-scalar",
+    "literal",
+    "hash",
+    "comment"
+  ],
+  "spec_refs": [
+    "grammar.block-scalar-strings",
+    "grammar.comments"
+  ],
+  "notes": "Inside a block scalar, `#` is content rather than a comment, and a tab after the content indentation is content rather than indentation.",
+  "parse_profiles": {
+    "baseline": {
+      "modes": "all",
+      "expect_node_graph": "expected_node_graph.json"
+    }
+  },
+  "emit_profiles": {
+    "standard": {
+      "mode": "standard",
+      "expect_output": "expected_emit_standard.yaml"
+    },
+    "strict": {
+      "mode": "strict",
+      "expect_output": "expected_emit_strict.yaml"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "summary": "Clip chomping drops a literal block scalar's trailing empty lines",
+  "tags": [
+    "strings",
+    "block-scalar",
+    "literal",
+    "empty-lines"
+  ],
+  "spec_refs": [
+    "grammar.block-scalar-strings"
+  ],
+  "notes": "Empty lines inside the block are kept; those after its last content line are not part of the value.",
+  "parse_profiles": {
+    "baseline": {
+      "modes": "all",
+      "expect_node_graph": "expected_node_graph.json"
+    }
+  },
+  "emit_profiles": {
+    "standard": {
+      "mode": "standard",
+      "expect_output": "expected_emit_standard.yaml"
+    },
+    "strict": {
+      "mode": "strict",
+      "expect_output": "expected_emit_strict.yaml"
+    }
+  }
+}
