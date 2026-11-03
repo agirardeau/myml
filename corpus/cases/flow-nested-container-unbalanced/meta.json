@@ -1,5 +1,5 @@
 {
-  "summary": "Nested flow containers must close every bracket they open",
+  "summary": "A flow container must close every bracket it opens on the same line",
   "tags": [
     "flow",
     "nesting",
@@ -8,12 +8,12 @@
   "spec_refs": [
     "containers.flow-style"
   ],
-  "notes": "The outer flow sequence is never closed.",
+  "notes": "The outer flow sequence is never closed, so the error points at its opening `[`.",
   "parse_profiles": {
     "baseline": {
       "modes": "all",
       "expect_error": {
-        "code": "malformed-flow",
+        "code": "malformed-sequence",
         "category": "structural_error",
         "line": 1,
         "column": 8

@@ -299,25 +299,21 @@ class Parser:
         return self._parse_plain_scalar(token, line, column, in_flow=in_flow)
 
     def _parse_flow_sequence(self, token: str, line: int, column: int):
-        if not token.endswith("]"):
-            self._error("Flow sequences must stay on one line.", code="malformed-sequence", line=line, column=column)
-        inner = token[1:-1].strip()
-        if not inner:
+        commas = self._scan_flow_delimiters(token, line, column)
+        if not token[1:-1].strip():
             return []
         result: list[object] = []
-        for part, part_column in self._split_flow_items(inner, line, column + 1):
+        for part, part_column in self._split_flow_items(token, commas, line, column):
             result.append(self._parse_inline_value(part, line, part_column, in_flow=True))
         return result
 
     def _parse_flow_mapping(self, token: str, line: int, column: int):
-        if not token.endswith("}"):
-            self._error("Flow mappings must stay on one line.", code="malformed-mapping", line=line, column=column)
-        inner = token[1:-1].strip()
-        if not inner:
+        commas = self._scan_flow_delimiters(token, line, column)
+        if not token[1:-1].strip():
             return {}
         result: dict[str, object] = {}
         seen_keys: set[str] = set()
-        for part, part_column in self._split_flow_items(inner, line, column + 1):
+        for part, part_column in self._split_flow_items(token, commas, line, column):
             separator = self._find_mapping_separator(part)
             if separator is None:
                 self._error("Malformed flow mapping entry.", code="malformed-mapping", line=line, column=part_column)
@@ -457,15 +453,14 @@ class Parser:
             self._error("Unquoted strings in flow containers may not contain `,`, `[`, `]`, `{`, or `}`.", code="flow-unquoted-comma", line=line, column=column, category="lexical_error")
         return token
 
-    def _split_flow_items(self, text: str, line: int, column: int) -> list[tuple[str, int]]:
-        parts: list[tuple[str, int]] = []
-        start = 0
-        part_column = column
+    def _scan_flow_delimiters(self, token: str, line: int, column: int) -> list[int]:
+        """Validate the brackets of the flow container `token` and return the indices of its top-level commas."""
+        commas: list[int] = []
         quote: str | None = None
         escaped = False
         single_quote_end = False
-        open_brackets: list[str] = []
-        for index, char in enumerate(text):
+        open_brackets: list[tuple[str, int]] = []
+        for index, char in enumerate(token):
             if quote:
                 if quote == '"':
                     if escaped:
@@ -490,27 +485,46 @@ class Parser:
             if char in {'"', "'"}:
                 quote = char
                 continue
-            # A bracket opens a nested container only where a value starts; elsewhere it is scalar content.
-            if char in "[{" and text[:index].rstrip()[-1:] in {"", ",", ":", "[", "{"}:
-                open_brackets.append("]" if char == "[" else "}")
+            # Brackets open a nested container only where a value starts and close one only where a
+            # value ends; elsewhere they are scalar content, which scalar parsing rejects.
+            if char in "[{" and token[:index].rstrip()[-1:] in {"", ",", ":", "[", "{"}:
+                open_brackets.append(("]" if char == "[" else "}", index))
                 continue
-            if char in "]}" and open_brackets:
-                if open_brackets.pop() != char:
-                    self._error("Unbalanced flow container brackets.", code="malformed-flow", line=line, column=column + index)
+            if not open_brackets:
+                if char.isspace():
+                    continue
+                self._error("Unexpected content after flow container.", code="malformed-flow", line=line, column=column + index)
+            if char in "]}" and token[index + 1 :].lstrip()[:1] in {"", ",", "]", "}"}:
+                expected = open_brackets[-1][0]
+                if char != expected:
+                    self._error(
+                        f"Mismatched `{char}` in flow container; expected `{expected}`.",
+                        code="mismatched-flow-delimiter",
+                        line=line,
+                        column=column + index,
+                    )
+                open_brackets.pop()
                 continue
-            if char == "," and not open_brackets:
-                part = text[start:index].strip()
-                if not part:
-                    self._error("Malformed flow container.", code="malformed-flow", line=line, column=part_column)
-                parts.append((part, part_column + (len(text[start:index]) - len(text[start:index].lstrip()))))
-                start = index + 1
-                part_column = column + index + 1
+            if char == "," and len(open_brackets) == 1:
+                commas.append(index)
         if open_brackets:
-            self._error("Unbalanced flow container brackets.", code="malformed-flow", line=line, column=column - 1)
-        tail = text[start:].strip()
-        if not tail:
-            self._error("Malformed flow container.", code="malformed-flow", line=line, column=part_column)
-        parts.append((tail, part_column + (len(text[start:]) - len(text[start:].lstrip()))))
+            is_sequence = open_brackets[-1][0] == "]"
+            self._error(
+                f"Unclosed `{'[' if is_sequence else '{'}` in flow container; flow containers must stay on one line.",
+                code="malformed-sequence" if is_sequence else "malformed-mapping",
+                line=line,
+                column=column + open_brackets[-1][1],
+            )
+        return commas
+
+    def _split_flow_items(self, token: str, commas: list[int], line: int, column: int) -> list[tuple[str, int]]:
+        parts: list[tuple[str, int]] = []
+        for start, end in zip([0, *commas], [*commas, len(token) - 1]):
+            segment = token[start + 1 : end]
+            part = segment.strip()
+            if not part:
+                self._error("Malformed flow container.", code="malformed-flow", line=line, column=column + start + 1)
+            parts.append((part, column + start + 1 + len(segment) - len(segment.lstrip())))
         return parts
 
     def _find_mapping_separator(self, text: str) -> int | None:

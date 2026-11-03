@@ -1,0 +1,24 @@
+{
+  "summary": "A nested flow container must close with its own delimiter",
+  "tags": [
+    "flow",
+    "nesting",
+    "invalid"
+  ],
+  "spec_refs": [
+    "containers.flow-style"
+  ],
+  "notes": "The nested flow mapping is closed with `]`, so the error points at that delimiter.",
+  "parse_profiles": {
+    "baseline": {
+      "modes": "all",
+      "expect_error": {
+        "code": "mismatched-flow-delimiter",
+        "category": "structural_error",
+        "line": 1,
+        "column": 14
+      }
+    }
+  },
+  "emit_profiles": {}
+}
