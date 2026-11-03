@@ -30,6 +30,11 @@ def normalize(value):
     return value
 
 
+def read_fixture(path):
+    # Myml fixtures are compared byte for byte, so line endings and byte order marks are kept.
+    return path.read_bytes().decode("utf-8")
+
+
 def case_dirs(cases_root):
     # Hidden entries, such as tool metadata directories, are not corpus cases.
     return sorted(path for path in cases_root.iterdir() if path.is_dir() and not path.name.startswith("."))
@@ -54,7 +59,7 @@ class CorpusTests(unittest.TestCase):
         for case_dir in case_dirs(cases_root):
             with self.subTest(case=case_dir.name):
                 meta = json.loads((case_dir / "meta.json").read_text())
-                source = (case_dir / "input.yaml").read_text()
+                source = read_fixture(case_dir / "input.yaml")
 
                 for profile_id, profile in meta["parse_profiles"].items():
                     if not profile_supported(profile):

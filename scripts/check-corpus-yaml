@@ -106,7 +106,8 @@ def same(a, b) -> bool:
 
 
 def check(path: Path, expected) -> str | None:
-    text = path.read_text()
+    # Read the bytes as they are, keeping line endings and byte order marks.
+    text = path.read_bytes().decode("utf-8")
     try:
         documents = list(YAML(typ="safe", pure=True).compose_all(io.StringIO(text)))
     except YAMLError as error:

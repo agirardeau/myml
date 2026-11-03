@@ -46,6 +46,11 @@ def materialize(value):
     return value
 
 
+def read_fixture(path):
+    # Myml fixtures are compared byte for byte, so line endings and byte order marks are kept.
+    return path.read_bytes().decode("utf-8")
+
+
 def case_dirs(cases_root):
     # Hidden entries, such as tool metadata directories, are not corpus cases.
     return sorted(path for path in cases_root.iterdir() if path.is_dir() and not path.name.startswith("."))
@@ -164,7 +169,7 @@ class CorpusTests(unittest.TestCase):
         for case_dir in case_dirs(cases_root):
             with self.subTest(case=case_dir.name):
                 meta = json.loads((case_dir / "meta.json").read_text())
-                source = (case_dir / "input.yaml").read_text()
+                source = read_fixture(case_dir / "input.yaml")
                 parse_profiles = meta["parse_profiles"]
                 emit_profiles = meta.get("emit_profiles", {})
 
@@ -209,7 +214,7 @@ class CorpusTests(unittest.TestCase):
                         )
 
                         if expects_output:
-                            expected_output = (case_dir / profile["expect_output"]).read_text()
+                            expected_output = read_fixture(case_dir / profile["expect_output"])
                             if options.get("roundtrip"):
                                 roundtrip_value = loads(source, mode=profile["mode"], roundtrip=True)
                                 actual_output = dumps(roundtrip_value, mode=profile["mode"], roundtrip=True)

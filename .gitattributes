@@ -1,0 +1,2 @@
+# Corpus fixtures are byte-exact test data; never convert their line endings.
+corpus/** -text
