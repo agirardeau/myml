@@ -10,6 +10,10 @@
 - The crate exposes a public `Mode` enum with `Standard` and `Strict` variants. `from_str`, `from_reader`, `to_string`, and `to_writer` use `Standard` mode by default; corresponding `from_str_with_mode`, `from_reader_with_mode`, `to_string_with_mode`, and `to_writer_with_mode` functions accept a `Mode` argument. The mode is selected per call, not by a Cargo feature flag.
 - The crate does not provide roundtrip formatting preservation or a format-aware editing API.
 
+### Requirement: Crate depends only on Serde
+
+- The crate has no non-dev dependencies other than `serde`.
+
 ### Requirement: Parsing follows the Myml language definition
 
 - In `standard` mode, parsing accepts Myml as defined in `docs/lang.md`, subject to the numeric representation limit below.

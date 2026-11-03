@@ -53,3 +53,92 @@ fn flow_containers_nest_on_one_line() {
         assert!(from_str::<Value>(input).is_err(), "{input:?}");
     }
 }
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+enum Shape {
+    Empty,
+    Circle(f64),
+    Point(i32, i32),
+    Rect { w: u32, h: u32 },
+}
+#[test]
+fn enums_and_options_roundtrip() {
+    let shapes = vec![
+        Shape::Empty,
+        Shape::Circle(1.5),
+        Shape::Point(-1, 2),
+        Shape::Rect { w: 3, h: 4 },
+    ];
+    let s = to_string(&shapes).unwrap();
+    assert_eq!(
+        s,
+        "- Empty\n- Circle: 1.5\n- Point:\n    - -1\n    - 2\n- Rect:\n    h: 4\n    w: 3\n"
+    );
+    assert_eq!(from_str::<Vec<Shape>>(&s).unwrap(), shapes);
+    let options: Vec<Option<u8>> = vec![Some(1), None];
+    assert_eq!(
+        from_str::<Vec<Option<u8>>>(&to_string(&options).unwrap()).unwrap(),
+        options
+    );
+}
+#[test]
+fn block_scalars_clip_and_fold() {
+    let v = from_str::<Value>(
+        "lit: |\n  a\n\n  b\n\n\nfold: >\n  one\n  two\n\n  three\n    kept\n  four\n",
+    )
+    .unwrap();
+    let Value::Mapping(m) = v else { panic!() };
+    assert_eq!(m["lit"], Value::String("a\n\nb\n".into()));
+    assert_eq!(
+        m["fold"],
+        Value::String("one two\nthree\n  kept\nfour\n".into())
+    );
+}
+#[test]
+fn keys_resolving_to_non_strings_are_rejected_and_quoted() {
+    for input in ["1: a\n", "true: a\n", "null: a\n", "{1: a}\n"] {
+        assert!(from_str::<Value>(input).is_err(), "{input:?}");
+    }
+    let v = from_str::<Value>("\"1\": a\n\"true\": b\n\"<<\": c\n").unwrap();
+    let s = to_string(&v).unwrap();
+    assert_eq!(s, "\"1\": a\n\"<<\": c\n\"true\": b\n");
+    assert_eq!(from_str::<Value>(&s).unwrap(), v);
+}
+#[test]
+fn quoted_strings_roundtrip() {
+    for text in [
+        "a\"b\\c",
+        "line\nbreak\ttab",
+        "\u{1}\u{85}\u{2028}",
+        "True",
+        " pad",
+        "a: b",
+    ] {
+        let s = to_string(&text).unwrap();
+        assert_eq!(from_str::<String>(&s).unwrap(), text, "{s:?}");
+    }
+}
+#[test]
+fn unsupported_syntax_is_rejected() {
+    for input in [
+        "---\na: 1\n",
+        "a: 1\n...\n",
+        "a: &x 1\n",
+        "a: !tag 1\n",
+        "a: ~\n",
+        "<<: {}\n",
+        "a: 1\na: 2\n",
+        "a:\n\tb: 1\n",
+        "a: +1\n",
+        "a: 0o17\n",
+        "a: 1_000\n",
+        "a: 1.5e400\n",
+        "a: |\n",
+    ] {
+        assert!(from_str::<Value>(input).is_err(), "{input:?}");
+    }
+}
+#[test]
+fn errors_report_positions() {
+    let e = from_str::<Value>("a: 1\nb: [1, 2\n").unwrap_err();
+    assert_eq!((e.line(), e.column()), (Some(2), Some(4)));
+}

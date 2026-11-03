@@ -9,7 +9,7 @@ readme = "README.md"
 exclude = ["tests/corpus.rs"]
 
 [dependencies]
+serde = "1"
+
+[dev-dependencies]
 serde = { version = "1", features = ["derive"] }
-yaml-rust2 = "0.10"
-serde-value = "0.7"
-serde_json = "1"
