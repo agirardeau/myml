@@ -1,0 +1,27 @@
+{
+  "summary": "Mixed CRLF, CR, and LF line breaks are accepted in one document",
+  "tags": [
+    "line-break",
+    "block-scalar"
+  ],
+  "spec_refs": [
+    "grammar.line-breaks"
+  ],
+  "notes": "Lines end with CRLF, CR, and LF in turn; all are read as LF in values. The line endings are invisible in most editors.",
+  "parse_profiles": {
+    "baseline": {
+      "modes": "all",
+      "expect_node_graph": "expected_node_graph.json"
+    }
+  },
+  "emit_profiles": {
+    "standard": {
+      "mode": "standard",
+      "expect_output": "expected_emit_standard.yaml"
+    },
+    "strict": {
+      "mode": "strict",
+      "expect_output": "expected_emit_strict.yaml"
+    }
+  }
+}

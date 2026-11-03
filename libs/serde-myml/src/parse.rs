@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 
 pub(crate) fn parse(text: &str, mode: Mode) -> Result<Value, Error> {
     let text = text.strip_prefix('\u{feff}').unwrap_or(text);
-    let lines: Vec<&str> = text.lines().collect();
+    let lines = split_lines(text);
     for (n, line) in lines.iter().enumerate() {
         let body = split_comment(line);
         if body == "---" || body == "..." || body.starts_with("--- ") || body.starts_with("... ") {
@@ -402,6 +402,27 @@ impl<'a> Parser<'a> {
         }
         Ok(Value::Mapping(map))
     }
+}
+
+/// Splits `text` at YAML 1.2 line breaks: CRLF, CR, and LF.
+fn split_lines(text: &str) -> Vec<&str> {
+    let mut lines = Vec::new();
+    let bytes = text.as_bytes();
+    let (mut start, mut i) = (0, 0);
+    while i < bytes.len() {
+        if bytes[i] == b'\n' || bytes[i] == b'\r' {
+            lines.push(&text[start..i]);
+            if bytes[i] == b'\r' && bytes.get(i + 1) == Some(&b'\n') {
+                i += 1;
+            }
+            start = i + 1;
+        }
+        i += 1;
+    }
+    if start < text.len() {
+        lines.push(&text[start..]);
+    }
+    lines
 }
 
 fn chars(s: &str) -> usize {

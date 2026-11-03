@@ -20,6 +20,13 @@ A Myml document represents a YAML 1.2 representation graph consisting of:
 
 Mapping keys are strings.
 
+## Encoding and Line Breaks
+
+A Myml document is UTF-8 text.
+
+Line breaks are CRLF, CR, or LF, and a document may mix them. Each line break
+within a scalar value is read as LF.
+
 ## Grammar Categories
 
 A Myml document may contain:

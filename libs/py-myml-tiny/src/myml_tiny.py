@@ -76,6 +76,20 @@ def _validate_mode(mode: str) -> str:
     return mode
 
 
+_LINE_BREAK_RE = re.compile(r"\r\n|\r|\n")
+
+
+def _split_lines(text: str) -> list[str]:
+    """Split `text` at YAML 1.2 line breaks: CRLF, CR, and LF.
+
+    Unlike str.splitlines, other characters such as form feeds and U+2028 do not end a line.
+    """
+    lines = _LINE_BREAK_RE.split(text)
+    if lines[-1] == "":
+        lines.pop()
+    return lines
+
+
 def _fold_block_lines(lines: list[str]) -> str:
     """Join `>` block scalar lines as YAML folding does.
 
@@ -104,7 +118,7 @@ def _fold_block_lines(lines: list[str]) -> str:
 class Parser:
     def __init__(self, text: str, *, mode: str = "standard") -> None:
         self.text = text
-        self.lines = [Line(index + 1, raw) for index, raw in enumerate(text.splitlines())]
+        self.lines = [Line(index + 1, raw) for index, raw in enumerate(_split_lines(text))]
         self.index = 0
         self.mode = _validate_mode(mode)
 

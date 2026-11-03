@@ -1,0 +1,27 @@
+{
+  "summary": "Lone CR line breaks are accepted and read as LF in values",
+  "tags": [
+    "line-break",
+    "block-scalar"
+  ],
+  "spec_refs": [
+    "grammar.line-breaks"
+  ],
+  "notes": "Every line ends with a lone CR; the block scalar's line breaks are normalized to LF. The line endings are invisible in most editors.",
+  "parse_profiles": {
+    "baseline": {
+      "modes": "all",
+      "expect_node_graph": "expected_node_graph.json"
+    }
+  },
+  "emit_profiles": {
+    "standard": {
+      "mode": "standard",
+      "expect_output": "expected_emit_standard.yaml"
+    },
+    "strict": {
+      "mode": "strict",
+      "expect_output": "expected_emit_strict.yaml"
+    }
+  }
+}
