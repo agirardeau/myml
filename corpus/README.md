@@ -134,6 +134,21 @@ This keeps emitter verification separate from parse verification while still
 keeping profile discovery machine-readable in JSON control data and the emitted
 text itself in human-readable Myml fixtures.
 
+## YAML 1.2 Cross-Check
+
+Every Myml document is YAML 1.2 with the same representation graph, so the
+corpus can be checked against an independent YAML 1.2 parser.
+`scripts/check-corpus-yaml` (or `just check-corpus-yaml`) parses `input.yaml`
+and every `expected_emit_<profile>.yaml` fixture of each case with a successful
+parse profile using ruamel.yaml, resolves plain scalars with the YAML 1.2 core
+schema, and compares the result with `expected_node_graph.json`. CI runs it.
+
+This catches expectations that a Myml parser and its fixtures agree on but
+YAML does not, such as an unquoted `0123`, which YAML 1.2 reads as the integer
+123. Cases that expect parse errors are not cross-checked, because Myml
+rejects some valid YAML. The script requires `uv`, which installs ruamel.yaml
+for it.
+
 ## Coverage Status
 
 `status.md` records repo-level coverage notes such as covered areas, known gaps,
@@ -160,3 +175,5 @@ When adding a new case:
    profile and baseline emit profile remain available without `requires` when
    the case has a successful parse path.
 10. Update `status.md` only if the overall coverage picture changes.
+11. Run `just check-corpus-yaml` to confirm that successful cases agree with
+    YAML 1.2.

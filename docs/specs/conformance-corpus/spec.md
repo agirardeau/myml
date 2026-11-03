@@ -27,6 +27,13 @@
 
 - All control files use JSON rather than YAML.
 
+### Requirement: Corpus agrees with YAML 1.2
+
+- For each case with a successful parse profile, `input.yaml` and every `expected_emit_{PROFILE}.yaml` fixture parse with a YAML 1.2 parser, resolving plain scalars with the YAML 1.2 core schema, to the case's `expected_node_graph.json`.
+- `scripts/check-corpus-yaml` performs this cross-check, and CI runs it.
+- The cross-check uses a YAML 1.2 parser that is independent of the Myml implementations.
+- Cases that expect parse errors are not cross-checked, since Myml rejects some valid YAML.
+
 ### Requirement: Corpus layout supports growth
 
 - New cases can be added without restructuring fixtures or existing cases.

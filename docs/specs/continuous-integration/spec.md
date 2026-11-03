@@ -7,6 +7,10 @@
 - Automated validation runs using Github Actions
 - Automated validation runs on pull requests and push events
 
+### Requirement: CI cross-checks the conformance corpus
+
+- The CI workflow runs `scripts/check-corpus-yaml`, which verifies the corpus against a YAML 1.2 parser
+
 ### Requirement: CI validates the Python library
 
 - The CI workflow runs the checked-in automated test suite for `libs/py-yaml`

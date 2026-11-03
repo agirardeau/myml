@@ -21,6 +21,7 @@ Requires `just`.
 just test-py-myml
 just test-py-myml-tiny
 just test-serde-myml
+just check-corpus-yaml  # cross-check the corpus against a YAML 1.2 parser
 
 # Release
 just release {all|py-myml|py-myml-tiny|serde-myml} {major|minor|patch}

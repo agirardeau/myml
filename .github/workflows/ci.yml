@@ -29,6 +29,21 @@ jobs:
       - name: Verify package
         run: cargo package --manifest-path libs/serde-myml/Cargo.toml --locked
 
+  corpus-yaml:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Cross-check corpus against YAML 1.2
+        run: scripts/check-corpus-yaml
+
   py-myml:
     runs-on: ubuntu-latest
     strategy:

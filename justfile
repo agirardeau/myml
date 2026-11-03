@@ -9,6 +9,9 @@ test-py-myml-tiny:
 test-serde-myml:
     cargo test --manifest-path libs/serde-myml/Cargo.toml --locked --all-targets
 
+check-corpus-yaml:
+    scripts/check-corpus-yaml
+
 release package level:
     case "$1" in \
         all) scripts/release-python-lib py-myml "$2" && \

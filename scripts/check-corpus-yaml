@@ -1,0 +1,145 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.11"
+# dependencies = ["ruamel.yaml==0.18.10"]
+# ///
+"""Cross-check the conformance corpus against a YAML 1.2 parser.
+
+Every Myml document is meant to be YAML 1.2 that yields the same representation graph. For each
+case with a successful parse profile, this parses `input.yaml` and every `expected_emit_*.yaml`
+fixture with ruamel.yaml, resolves plain scalars with the YAML 1.2 core schema, and compares the
+result with `expected_node_graph.json`.
+
+ruamel.yaml is used only for parsing; its own tag resolver accepts forms outside the core schema,
+so plain scalars are resolved here instead.
+"""
+
+from __future__ import annotations
+
+import io
+import json
+import math
+import re
+import sys
+from pathlib import Path
+
+from ruamel.yaml import YAML
+from ruamel.yaml.error import YAMLError
+from ruamel.yaml.nodes import MappingNode, ScalarNode, SequenceNode
+
+ROOT = Path(__file__).resolve().parents[1]
+CASES = ROOT / "corpus" / "cases"
+
+# YAML 1.2.2 section 10.3.2, Tag Resolution.
+_NULL = re.compile(r"null|Null|NULL|~|")
+_BOOL = re.compile(r"true|True|TRUE|false|False|FALSE")
+_INT10 = re.compile(r"[-+]?[0-9]+")
+_INT8 = re.compile(r"0o[0-7]+")
+_INT16 = re.compile(r"0x[0-9a-fA-F]+")
+_FLOAT = re.compile(r"[-+]?(\.[0-9]+|[0-9]+(\.[0-9]*)?)([eE][-+]?[0-9]+)?")
+_INF = re.compile(r"[-+]?(\.inf|\.Inf|\.INF)")
+_NAN = re.compile(r"\.nan|\.NaN|\.NAN")
+
+
+class Mismatch(Exception):
+    pass
+
+
+def resolve_plain(text: str):
+    if _NULL.fullmatch(text):
+        return None
+    if _BOOL.fullmatch(text):
+        return text.lower() == "true"
+    if _INT10.fullmatch(text):
+        return int(text, 10)
+    if _INT8.fullmatch(text):
+        return int(text[2:], 8)
+    if _INT16.fullmatch(text):
+        return int(text[2:], 16)
+    if _FLOAT.fullmatch(text):
+        return float(text)
+    if _INF.fullmatch(text):
+        return -math.inf if text.startswith("-") else math.inf
+    if _NAN.fullmatch(text):
+        return math.nan
+    return text
+
+
+def graph(node):
+    """Converts a composed node to the corpus node-graph JSON form."""
+    if getattr(node, "anchor", None):
+        raise Mismatch(f"anchor {node.anchor!r} at {node.start_mark}")
+    if isinstance(node, MappingNode):
+        result = {}
+        for key_node, value_node in node.value:
+            key = graph(key_node)
+            if not isinstance(key, str):
+                raise Mismatch(f"non-string key {key!r} at {key_node.start_mark}")
+            if key in result:
+                raise Mismatch(f"duplicate key {key!r} at {key_node.start_mark}")
+            result[key] = graph(value_node)
+        return result
+    if isinstance(node, SequenceNode):
+        return [graph(item) for item in node.value]
+    if isinstance(node, ScalarNode):
+        value = resolve_plain(node.value) if node.style is None else node.value
+        if isinstance(value, float):
+            if math.isnan(value):
+                return ".nan"
+            if math.isinf(value):
+                return ".inf" if value > 0 else "-.inf"
+        return value
+    raise Mismatch(f"unexpected node {node!r}")
+
+
+def same(a, b) -> bool:
+    """Compares node graphs, treating integral floats and ints as equal but never bools as numbers."""
+    if isinstance(a, bool) or isinstance(b, bool):
+        return type(a) is type(b) and a == b
+    if isinstance(a, (int, float)) and isinstance(b, (int, float)):
+        return a == b
+    if isinstance(a, dict) and isinstance(b, dict):
+        return a.keys() == b.keys() and all(same(a[k], b[k]) for k in a)
+    if isinstance(a, list) and isinstance(b, list):
+        return len(a) == len(b) and all(same(x, y) for x, y in zip(a, b))
+    return type(a) is type(b) and a == b
+
+
+def check(path: Path, expected) -> str | None:
+    text = path.read_text()
+    try:
+        documents = list(YAML(typ="safe", pure=True).compose_all(io.StringIO(text)))
+    except YAMLError as error:
+        return f"not valid YAML 1.2: {error}"
+    if len(documents) != 1:
+        return f"expected one YAML document, found {len(documents)}"
+    try:
+        actual = graph(documents[0]) if documents[0] is not None else None
+    except Mismatch as error:
+        return str(error)
+    if not same(actual, expected):
+        return f"YAML 1.2 graph {json.dumps(actual)} differs from expected {json.dumps(expected)}"
+    return None
+
+
+def main() -> int:
+    failures = []
+    checked = 0
+    for case_dir in sorted(p for p in CASES.iterdir() if p.is_dir() and not p.name.startswith(".")):
+        meta = json.loads((case_dir / "meta.json").read_text())
+        if not any("expect_node_graph" in p for p in meta["parse_profiles"].values()):
+            continue
+        expected = json.loads((case_dir / "expected_node_graph.json").read_text())
+        for path in [case_dir / "input.yaml", *sorted(case_dir.glob("expected_emit_*.yaml"))]:
+            checked += 1
+            problem = check(path, expected)
+            if problem:
+                failures.append(f"{path.relative_to(ROOT)}: {problem}")
+    for failure in failures:
+        print(failure, file=sys.stderr)
+    print(f"checked {checked} documents, {len(failures)} mismatches")
+    return 1 if failures else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
