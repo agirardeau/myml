@@ -1,0 +1,26 @@
+{
+  "summary": "Decimals with no digits after the point are rejected",
+  "tags": [
+    "number",
+    "decimal",
+    "lexical",
+    "invalid"
+  ],
+  "spec_refs": [
+    "grammar.number-forms",
+    "unsupported.invalid-numeric-form"
+  ],
+  "notes": "YAML 1.2 reads `1.` as the float 1.0, which is outside Myml's fixed-point decimal form.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "invalid-number-form",
+        "category": "lexical_error",
+        "line": 1,
+        "column": 8
+      }
+    }
+  },
+  "emit_profiles": {}
+}

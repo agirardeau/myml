@@ -1,0 +1,26 @@
+{
+  "summary": "Negative decimals without a leading digit are rejected",
+  "tags": [
+    "number",
+    "decimal",
+    "lexical",
+    "invalid"
+  ],
+  "spec_refs": [
+    "grammar.number-forms",
+    "unsupported.invalid-numeric-form"
+  ],
+  "notes": "YAML 1.2 reads `-.5` as the float -0.5, and Myml requires a digit before the decimal point.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "invalid-number-leading-dot-decimal",
+        "category": "lexical_error",
+        "line": 1,
+        "column": 8
+      }
+    }
+  },
+  "emit_profiles": {}
+}

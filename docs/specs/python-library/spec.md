@@ -26,7 +26,8 @@
 - Invalid scalar forms are rejected.
 - Parsing a document that is valid under `docs/lang.md` returns the corresponding Python representation graph.
 - Scalar resolution follows the order defined by the Myml language definition.
-- YAML 1.1-ambiguous plain scalars such as `yes`, `no`, `on`, `off`, ISO-like date/time values, octal-like forms, and sexagesimal-like forms are treated as strings unless they match a supported Myml scalar form.
+- YAML 1.1-ambiguous plain scalars such as `yes`, `no`, `on`, `off`, ISO-like date/time values, binary-like forms, and sexagesimal-like forms are treated as strings unless they match a supported Myml scalar form.
+- Plain scalars that the YAML 1.2 core schema resolves to numbers but that match no supported Myml numeric form, such as `0123`, `+1`, and `0o17`, are rejected.
 - Parser results and raised errors for applicable corpus cases match the checked-in expectations.
 - Corpus cases act as normative parser acceptance data for the library.
 

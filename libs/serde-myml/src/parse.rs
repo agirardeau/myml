@@ -709,7 +709,7 @@ pub(crate) fn plain_scalar(
     if token == "-0" {
         return err("`-0` is not a supported numeric form");
     }
-    if token.strip_prefix('.').is_some_and(digits) {
+    if opt_neg(token).strip_prefix('.').is_some_and(digits) {
         return err("leading-dot decimals are unsupported");
     }
     if whole_frac(opt_neg(token)).is_some_and(|(w, _)| w.len() > 1 && w.starts_with('0')) {
@@ -738,12 +738,17 @@ pub(crate) fn plain_scalar(
     if is_exponent(token) {
         return err("scientific notation must use a normalized coefficient with 1 <= m < 10");
     }
-    if token.starts_with('+') && token[1..].starts_with(|c: char| c.is_ascii_digit() || c == '.')
-        || ["0o", "0b", "0X", "-0x"]
-            .iter()
-            .any(|p| token.starts_with(p))
-    {
-        return err("unsupported numeric form");
+    if is_core_number(token) {
+        // YAML 1.2 reads these as numbers, so they cannot be strings either.
+        return if token.starts_with('+') {
+            err("numbers may not use a `+` prefix")
+        } else if token.starts_with("0o") {
+            err("octal notation is unsupported")
+        } else if digits(opt_neg(token)) {
+            err("integers may not have leading zeros")
+        } else {
+            err("unsupported numeric form")
+        };
     }
     if mode == Mode::Strict {
         return err("quoted string scalars are required");
@@ -798,6 +803,26 @@ fn is_normalized_exponent(s: &str) -> bool {
         let (whole, frac) = c.split_once('.').unwrap_or((c, "0"));
         whole.len() == 1 && whole != "0" && digits(whole) && digits(frac)
     })
+}
+/// Whether the YAML 1.2 core schema resolves plain scalar `s` to an integer or float.
+fn is_core_number(s: &str) -> bool {
+    let unsigned = s.strip_prefix(['-', '+']).unwrap_or(s);
+    if digits(unsigned) || matches!(unsigned, ".inf" | ".Inf" | ".INF") {
+        return true;
+    }
+    if let Some(octal) = s.strip_prefix("0o") {
+        return !octal.is_empty() && octal.bytes().all(|b| (b'0'..=b'7').contains(&b));
+    }
+    let (mantissa, exponent) = match unsigned.split_once(['e', 'E']) {
+        Some((m, e)) => (m, Some(e)),
+        None => (unsigned, None),
+    };
+    let mantissa_ok = match mantissa.split_once('.') {
+        Some(("", frac)) => digits(frac),
+        Some((whole, frac)) => digits(whole) && frac.bytes().all(|b| b.is_ascii_digit()),
+        None => digits(mantissa),
+    };
+    mantissa_ok && exponent.is_none_or(|e| digits(e.strip_prefix(['-', '+']).unwrap_or(e)))
 }
 fn is_numeric_with_underscores(s: &str) -> bool {
     let body = opt_neg(s);

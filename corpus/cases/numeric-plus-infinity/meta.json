@@ -1,0 +1,26 @@
+{
+  "summary": "Infinity with a `+` prefix is rejected",
+  "tags": [
+    "number",
+    "inf",
+    "lexical",
+    "invalid"
+  ],
+  "spec_refs": [
+    "grammar.number-forms",
+    "unsupported.invalid-numeric-form"
+  ],
+  "notes": "YAML 1.2 reads `+.inf` as positive infinity, and Myml does not allow `+` prefixes.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "invalid-number-plus-prefix",
+        "category": "lexical_error",
+        "line": 1,
+        "column": 8
+      }
+    }
+  },
+  "emit_profiles": {}
+}

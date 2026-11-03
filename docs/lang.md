@@ -107,6 +107,10 @@ lowercase letters.
 
 In exponential notation, `e` is lowercase.
 
+An unquoted scalar that the YAML 1.2 core schema resolves to a number but that
+matches no supported form, such as `0123`, `+1`, `0o17`, `1.`, or `1E5`, is an
+error rather than a string.
+
 ### Boolean and Null Forms
 
 Boolean literals are:

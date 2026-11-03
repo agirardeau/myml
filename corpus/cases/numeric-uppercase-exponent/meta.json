@@ -1,0 +1,27 @@
+{
+  "summary": "Exponents with an uppercase `E` are rejected",
+  "tags": [
+    "number",
+    "exponent",
+    "case",
+    "lexical",
+    "invalid"
+  ],
+  "spec_refs": [
+    "grammar.number-forms",
+    "unsupported.invalid-numeric-form"
+  ],
+  "notes": "YAML 1.2 reads `1E5` as a float, and Myml's exponential notation uses a lowercase `e`.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "invalid-number-form",
+        "category": "lexical_error",
+        "line": 1,
+        "column": 8
+      }
+    }
+  },
+  "emit_profiles": {}
+}

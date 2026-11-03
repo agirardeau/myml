@@ -1,0 +1,43 @@
+{
+  "summary": "Standard mode treats YAML 1.1 binary and other hex-like forms as strings",
+  "tags": [
+    "standard-mode",
+    "hex",
+    "string",
+    "mode"
+  ],
+  "spec_refs": [
+    "optional.standard-mode",
+    "scalar-resolution.string"
+  ],
+  "notes": "These are numbers in YAML 1.1 but strings in YAML 1.2, and they are outside Myml numeric syntax, so standard mode treats them as strings.",
+  "parse_profiles": {
+    "standard": {
+      "modes": [
+        "standard"
+      ],
+      "expect_node_graph": "expected_node_graph.json"
+    },
+    "strict": {
+      "modes": [
+        "strict"
+      ],
+      "expect_error": {
+        "code": "strict-mode-unquoted-string",
+        "category": "mode_restriction",
+        "line": 1,
+        "column": 9
+      }
+    }
+  },
+  "emit_profiles": {
+    "standard": {
+      "mode": "standard",
+      "expect_output": "expected_emit_standard.yaml"
+    },
+    "strict": {
+      "mode": "strict",
+      "expect_output": "expected_emit_strict.yaml"
+    }
+  }
+}

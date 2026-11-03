@@ -20,7 +20,8 @@
 - In `strict` mode, parsing rejects unquoted string scalars and reports that quoted string scalars are required.
 - Parsing rejects unsupported YAML features, invalid scalar forms, non-string mapping keys, and duplicate mapping keys.
 - Scalar resolution follows the order in `docs/lang.md`.
-- YAML 1.1-ambiguous plain scalars are strings unless they match a supported Myml scalar form.
+- YAML 1.1-ambiguous plain scalars that YAML 1.2 reads as strings are strings unless they match a supported Myml scalar form.
+- Plain scalars that the YAML 1.2 core schema resolves to numbers but that match no supported Myml numeric form are rejected.
 - Parsed mappings in `Value` are ordered by key, regardless of source order.
 - Invalid input produces useful errors with line and column information when available and an indication of the relevant rule or syntax category.
 

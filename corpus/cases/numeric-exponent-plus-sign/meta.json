@@ -1,0 +1,26 @@
+{
+  "summary": "Exponents with a `+` sign are rejected",
+  "tags": [
+    "number",
+    "exponent",
+    "lexical",
+    "invalid"
+  ],
+  "spec_refs": [
+    "grammar.number-forms",
+    "unsupported.invalid-numeric-form"
+  ],
+  "notes": "YAML 1.2 reads `1e+5` as a float, and Myml's exponential notation allows only a `-` exponent sign.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "invalid-number-form",
+        "category": "lexical_error",
+        "line": 1,
+        "column": 8
+      }
+    }
+  },
+  "emit_profiles": {}
+}

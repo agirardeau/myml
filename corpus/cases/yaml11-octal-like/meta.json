@@ -1,41 +1,27 @@
 {
-  "summary": "Standard mode treats octal-like numerals as strings",
+  "summary": "Integers with leading zeros are rejected",
   "tags": [
-    "standard-mode",
+    "number",
+    "leading-zero",
     "octal",
-    "mode"
+    "lexical",
+    "invalid"
   ],
   "spec_refs": [
-    "optional.standard-mode"
+    "grammar.number-forms",
+    "unsupported.invalid-numeric-form"
   ],
-  "notes": "This value is outside Myml numeric syntax, so standard mode treats it as a string.",
+  "notes": "YAML 1.1 reads `0123` as an octal number and YAML 1.2 as the integer 123. Myml does not allow leading zeros, so the value is rejected rather than read as either.",
   "parse_profiles": {
-    "standard": {
-      "modes": [
-        "standard"
-      ],
-      "expect_node_graph": "expected_node_graph.json"
-    },
-    "strict": {
-      "modes": [
-        "strict"
-      ],
+    "all": {
+      "modes": "all",
       "expect_error": {
-        "code": "strict-mode-unquoted-string",
-        "category": "mode_restriction",
+        "code": "invalid-number-leading-zero",
+        "category": "lexical_error",
         "line": 1,
         "column": 8
       }
     }
   },
-  "emit_profiles": {
-    "standard": {
-      "mode": "standard",
-      "expect_output": "expected_emit_standard.yaml"
-    },
-    "strict": {
-      "mode": "strict",
-      "expect_output": "expected_emit_strict.yaml"
-    }
-  }
+  "emit_profiles": {}
 }

@@ -13,6 +13,8 @@ _EXP_RE = re.compile(r"^-?(?:[1-9](?:\.[0-9]+)?)e-?[0-9]+$")
 _NUMERIC_UNDERSCORE_RE = re.compile(r"^-?(?:0x[0-9A-Fa-f_]+|[0-9][0-9_]*(?:\.[0-9_]+)?(?:e-?[0-9_]+)?)$")
 _LEADING_ZERO_DECIMAL_RE = re.compile(r"^-?0[0-9]+\.[0-9]+$")
 _SCI_RE = re.compile(r"^-?(?:[0-9]+(?:\.[0-9]+)?|\.[0-9]+)e-?[0-9]+$")
+# Plain scalars that the YAML 1.2 core schema resolves to integers or floats.
+_CORE_NUMBER_RE = re.compile(r"^(?:[-+]?[0-9]+|0o[0-7]+|[-+]?(?:\.[0-9]+|[0-9]+(?:\.[0-9]*)?)(?:[eE][-+]?[0-9]+)?|[-+]?\.(?:inf|Inf|INF))$")
 _UNQUOTED_KEY_RE = re.compile(r"^[\w./$()~\-]+$", re.UNICODE)
 
 
@@ -429,7 +431,7 @@ class Parser:
             )
         if token == "-0":
             self._error("`-0` is not a supported numeric form.", code="invalid-number-negative-zero", line=line, column=column, category="lexical_error")
-        if token.startswith(".") and len(token) > 1 and token[1:].isdigit():
+        if re.match(r"^-?\.[0-9]+$", token):
             self._error("Leading-dot decimals are not supported.", code="invalid-number-leading-dot-decimal", line=line, column=column, category="lexical_error")
         if _LEADING_ZERO_DECIMAL_RE.match(token):
             self._error(
@@ -456,6 +458,17 @@ class Parser:
                 column=column,
                 category="lexical_error",
             )
+        if _CORE_NUMBER_RE.match(token):
+            # YAML 1.2 reads these as numbers, so they cannot be strings either.
+            if token.startswith("+"):
+                message, code = "Numbers may not use a `+` prefix.", "invalid-number-plus-prefix"
+            elif token.startswith("0o"):
+                message, code = "Octal notation is not supported.", "invalid-number-octal"
+            elif re.match(r"^-?0[0-9]+$", token):
+                message, code = "Integers may not have leading zeros.", "invalid-number-leading-zero"
+            else:
+                message, code = "Unsupported numeric form.", "invalid-number-form"
+            self._error(message, code=code, line=line, column=column, category="lexical_error")
         if (mode or self.mode) == "strict":
             self._error("Strict mode requires quoted string scalars.", code="strict-mode-unquoted-string", line=line, column=column, category="mode_restriction")
         first = token[0]

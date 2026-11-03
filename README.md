@@ -6,10 +6,11 @@ specifications live under [`docs/specs/`](docs/specs/).
 The reference Python implementation lives in [`libs/py-myml`](libs/py-myml)
 and is verified against the checked-in corpus in [`corpus/`](corpus/).
 
-Standard mode treats YAML 1.1-ambiguous plain scalars such as `yes`, `no`,
-`on`, `off`, `y`, `n`, ISO-like date/time values, `0123`, and sexagesimal-like
-values such as `13:22` as strings unless they match a supported Myml scalar
-form.
+Standard mode treats plain scalars that YAML 1.1 reads as other types but YAML
+1.2 reads as strings, such as `yes`, `no`, `on`, `off`, `y`, `n`, ISO-like
+date/time values, `0b101`, and sexagesimal-like values such as `13:22`, as
+strings. Plain scalars that YAML 1.2 reads as numbers outside Myml's numeric
+forms, such as `0123` and `+1`, are errors.
 
 ## Development
 

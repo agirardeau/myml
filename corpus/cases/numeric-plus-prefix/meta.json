@@ -1,0 +1,26 @@
+{
+  "summary": "Numbers with a `+` prefix are rejected",
+  "tags": [
+    "number",
+    "integer",
+    "lexical",
+    "invalid"
+  ],
+  "spec_refs": [
+    "grammar.number-forms",
+    "unsupported.invalid-numeric-form"
+  ],
+  "notes": "YAML 1.2 reads `+1` as the integer 1, and Myml does not allow `+` prefixes.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "invalid-number-plus-prefix",
+        "category": "lexical_error",
+        "line": 1,
+        "column": 8
+      }
+    }
+  },
+  "emit_profiles": {}
+}

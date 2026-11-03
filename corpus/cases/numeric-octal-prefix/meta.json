@@ -1,0 +1,27 @@
+{
+  "summary": "Octal notation is rejected",
+  "tags": [
+    "number",
+    "octal",
+    "integer",
+    "lexical",
+    "invalid"
+  ],
+  "spec_refs": [
+    "grammar.number-forms",
+    "unsupported.invalid-numeric-form"
+  ],
+  "notes": "YAML 1.2 reads `0o17` as the integer 15, and Myml does not support octal notation.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "invalid-number-octal",
+        "category": "lexical_error",
+        "line": 1,
+        "column": 8
+      }
+    }
+  },
+  "emit_profiles": {}
+}
