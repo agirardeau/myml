@@ -6,6 +6,18 @@ pub(crate) fn parse(text: &str, mode: Mode) -> Result<Value, Error> {
     let text = text.strip_prefix('\u{feff}').unwrap_or(text);
     let lines = split_lines(text);
     for (n, line) in lines.iter().enumerate() {
+        if let Some((i, c)) = line.char_indices().find(|&(_, c)| !is_printable(c)) {
+            return Err(Error::at(
+                format!(
+                    "character U+{:04X} is not allowed; write it as an escape in a double-quoted string",
+                    c as u32
+                ),
+                n + 1,
+                chars(&line[..i]) + 1,
+            ));
+        }
+    }
+    for (n, line) in lines.iter().enumerate() {
         let body = split_comment(line);
         if body == "---" || body == "..." || body.starts_with("--- ") || body.starts_with("... ") {
             return Err(Error::at("document markers are unsupported", n + 1, 1));
@@ -402,6 +414,12 @@ impl<'a> Parser<'a> {
         }
         Ok(Value::Mapping(map))
     }
+}
+
+/// Whether `c` may appear unescaped in YAML 1.2, which excludes most control characters.
+pub(crate) fn is_printable(c: char) -> bool {
+    matches!(c, '\t' | '\u{20}'..='\u{7e}' | '\u{85}' | '\u{a0}'..='\u{d7ff}' | '\u{e000}'..='\u{fffd}')
+        || c >= '\u{10000}'
 }
 
 /// Splits `text` at YAML 1.2 line breaks: CRLF, CR, and LF.

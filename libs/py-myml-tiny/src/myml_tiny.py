@@ -79,6 +79,19 @@ def _validate_mode(mode: str) -> str:
 _LINE_BREAK_RE = re.compile(r"\r\n|\r|\n")
 
 
+def _is_printable(char: str) -> bool:
+    """Whether `char` may appear unescaped in YAML 1.2, which excludes most control characters."""
+    point = ord(char)
+    return (
+        char == "\t"
+        or 0x20 <= point <= 0x7E
+        or point == 0x85
+        or 0xA0 <= point <= 0xD7FF
+        or 0xE000 <= point <= 0xFFFD
+        or point >= 0x10000
+    )
+
+
 def _split_lines(text: str) -> list[str]:
     """Split `text` at YAML 1.2 line breaks: CRLF, CR, and LF.
 
@@ -123,6 +136,7 @@ class Parser:
         self.mode = _validate_mode(mode)
 
     def parse(self):
+        self._reject_invalid_characters()
         self._reject_document_markers()
         self._consume_trivia()
         if self.index >= len(self.lines):
@@ -133,6 +147,18 @@ class Parser:
             line = self.lines[self.index]
             self._error("Unexpected content after document root.", code="malformed-document", line=line.number, column=1)
         return root
+
+    def _reject_invalid_characters(self) -> None:
+        for line in self.lines:
+            for index, char in enumerate(line.text):
+                if not _is_printable(char):
+                    self._error(
+                        f"Character U+{ord(char):04X} is not allowed; write it as an escape in a double-quoted string.",
+                        code="invalid-character",
+                        line=line.number,
+                        column=index + 1,
+                        category="lexical_error",
+                    )
 
     def _reject_document_markers(self) -> None:
         # Block scalar content is always indented, so a marker at column 1 is never content.

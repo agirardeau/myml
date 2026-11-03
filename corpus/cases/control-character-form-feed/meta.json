@@ -1,0 +1,24 @@
+{
+  "summary": "An unescaped form feed is rejected, even in a quoted string",
+  "tags": [
+    "invalid",
+    "lexical",
+    "escape"
+  ],
+  "spec_refs": [
+    "grammar.encoding"
+  ],
+  "notes": "YAML 1.2 does not allow most control characters unescaped; write them as escapes such as `\\f` in double-quoted strings. The form feed is invisible in most editors.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "invalid-character",
+        "category": "lexical_error",
+        "line": 1,
+        "column": 10
+      }
+    }
+  },
+  "emit_profiles": {}
+}

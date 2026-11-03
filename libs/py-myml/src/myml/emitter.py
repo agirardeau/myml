@@ -8,7 +8,7 @@ from typing import Any
 from .errors import ParseError
 from .modes import is_special_float, validate_mode
 from .nodes import DocumentNode, MappingEntry, MappingNode, Node, ScalarNode, SequenceItem, SequenceNode
-from .parser import Parser
+from .parser import Parser, _is_printable
 from .roundtrip import RoundTripMapping, RoundTripSequence, coerce_node
 
 _SAFE_KEY_RE = re.compile(r"^[\w./$()~\-]+$", re.UNICODE)
@@ -218,7 +218,7 @@ def _render_flow_value(node: Node, *, mode: str) -> str:
 def _render_key(key: str) -> str:
     if _SAFE_KEY_RE.match(key) and not _string_requires_quotes(key, mode="standard", in_flow=False):
         return key
-    return json.dumps(key, ensure_ascii=False)
+    return _quote_string(key)
 
 
 def _render_scalar(value: ScalarNode | Node, *, mode: str, in_flow: bool, preserve_style: bool) -> str:
@@ -272,7 +272,7 @@ def _string_requires_quotes(text: str, *, mode: str, in_flow: bool) -> bool:
     """Whether `text` must be quoted: it is emitted unquoted only if it parses back as itself."""
     if text == "" or text != text.strip():
         return True
-    if any(ord(char) < 32 or char in "\x7f\x85\xa0\u2028\u2029" for char in text):
+    if any(not _is_printable(char) or char in "\x85\xa0\u2028\u2029" for char in text):
         return True
     if text.startswith("#") or " #" in text:
         return True
@@ -285,9 +285,10 @@ def _string_requires_quotes(text: str, *, mode: str, in_flow: bool) -> bool:
 
 def _quote_string(text: str) -> str:
     quoted = json.dumps(text, ensure_ascii=False)
-    for char in "\x85\xa0\u2028\u2029":
-        quoted = quoted.replace(char, f"\\u{ord(char):04x}")
-    return quoted
+    return "".join(
+        f"\\u{ord(char):04x}" if not _is_printable(char) or char in "\x85\xa0\u2028\u2029" else char
+        for char in quoted
+    )
 
 
 def _single_quote_string(text: str) -> str:
