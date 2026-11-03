@@ -1,0 +1,13 @@
+sites:
+  # indented comment
+  - 1
+  # later comment
+  - 2
+settings:
+# column-zero comment
+
+  mode: 1
+items:
+  -
+    # comment before expanded mapping
+    name: 3

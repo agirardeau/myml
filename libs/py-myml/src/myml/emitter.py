@@ -66,8 +66,10 @@ def _render_node(node: Node, *, indent: int, mode: str, roundtrip: bool, in_sequ
 
 def _render_mapping(node: MappingNode, *, indent: int, mode: str, roundtrip: bool, in_sequence: bool) -> list[str]:
     lines: list[str] = []
-    for entry in node.entries:
-        lines.extend(entry.before)
+    for index, entry in enumerate(node.entries):
+        # A sequence item's first entry shares the item's line, so its comments align with the `-`.
+        comment_indent = indent - 2 if in_sequence and index == 0 else indent
+        lines.extend(_indent_comment_lines(entry.before, comment_indent))
         key = _render_key(entry.key)
         value = entry.value
         prefix = " " * indent
@@ -118,7 +120,7 @@ def _render_mapping(node: MappingNode, *, indent: int, mode: str, roundtrip: boo
 def _render_sequence(node: SequenceNode, *, indent: int, mode: str, roundtrip: bool) -> list[str]:
     lines: list[str] = []
     for item in node.items:
-        lines.extend(item.before)
+        lines.extend(_indent_comment_lines(item.before, indent))
         prefix = " " * indent + "-"
         value = item.value
         if isinstance(value, ScalarNode) and value.style in {"literal", "folded"}:
@@ -132,6 +134,7 @@ def _render_sequence(node: SequenceNode, *, indent: int, mode: str, roundtrip: b
             continue
         if isinstance(value, MappingNode) and value.compact and len(value.entries) == 1:
             entry = value.entries[0]
+            lines.extend(_indent_comment_lines(entry.before, indent))
             scalar = _render_scalar(entry.value, mode=mode, in_flow=False, preserve_style=roundtrip and isinstance(entry.value, ScalarNode) and not entry.value.dirty)
             line = f"{prefix} {_render_key(entry.key)}: {scalar}"
             if item.inline_comment:
@@ -140,6 +143,7 @@ def _render_sequence(node: SequenceNode, *, indent: int, mode: str, roundtrip: b
             continue
         if isinstance(value, MappingNode) and len(value.entries) == 1 and all(isinstance(entry.value, ScalarNode) for entry in value.entries):
             entry = value.entries[0]
+            lines.extend(_indent_comment_lines(entry.before, indent))
             scalar = _render_scalar(entry.value, mode=mode, in_flow=False, preserve_style=roundtrip and not entry.value.dirty)
             line = f"{prefix} {_render_key(entry.key)}: {scalar}"
             if item.inline_comment:
@@ -186,6 +190,12 @@ def _render_sequence(node: SequenceNode, *, indent: int, mode: str, roundtrip: b
         lines.append(line)
     lines.extend(node.trailing_lines)
     return lines
+
+
+def _indent_comment_lines(lines: list[str], indent: int) -> list[str]:
+    # Comments without indentation, such as those supplied through the format-aware API, align with their entry.
+    prefix = " " * indent
+    return [f"{prefix}{line}" if line and not line[0].isspace() else line for line in lines]
 
 
 def _render_flow_mapping(node: MappingNode, *, mode: str) -> str:

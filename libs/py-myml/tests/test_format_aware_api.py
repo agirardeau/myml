@@ -63,6 +63,33 @@ class FormatAwareApiTests(unittest.TestCase):
             "tags: [\"x\"]\n",
         )
 
+    def test_nested_entry_comments_align_with_their_entries(self) -> None:
+        document = as_format_aware(
+            {
+                "sites": sequence([entry("a.com", before="first"), entry("b.com", before="second")]),
+                "settings": {"mode": entry(1, before="mode")},
+                "items": [{"name": entry(2, before="name")}],
+            }
+        )
+
+        text = dumps(document, roundtrip=True)
+
+        self.assertEqual(
+            text,
+            "sites:\n"
+            "  # first\n"
+            "  - a.com\n"
+            "  # second\n"
+            "  - b.com\n"
+            "settings:\n"
+            "  # mode\n"
+            "  mode: 1\n"
+            "items:\n"
+            "  # name\n"
+            "  - name: 2\n",
+        )
+        self.assertEqual(loads(text), {"sites": ["a.com", "b.com"], "settings": {"mode": 1}, "items": [{"name": 2}]})
+
     def test_mapping_reorder_requires_complete_key_set(self) -> None:
         document = as_format_aware({"a": 1, "b": 2, "c": 3})
 

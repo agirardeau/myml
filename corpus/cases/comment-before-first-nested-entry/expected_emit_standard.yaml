@@ -1,0 +1,7 @@
+sites:
+  - 1
+  - 2
+settings:
+  mode: 1
+items:
+  - name: 3

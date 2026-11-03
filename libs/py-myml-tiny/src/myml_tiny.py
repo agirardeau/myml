@@ -103,6 +103,8 @@ class Parser:
     def _parse_block(self, indent: int):
         if self.index >= len(self.lines):
             self._error("Expected a value.", code="missing-value", line=self.lines[-1].number if self.lines else 1, column=1)
+        # Comment and blank lines may precede a nested block.
+        self._consume_trivia()
         line = self.lines[self.index]
         actual = self._indentation(line)
         if actual != indent:

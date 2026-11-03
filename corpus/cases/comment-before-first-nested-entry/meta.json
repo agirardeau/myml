@@ -1,0 +1,44 @@
+{
+  "summary": "Comment and empty lines may precede the first entry of a nested block",
+  "tags": [
+    "comments",
+    "empty-lines",
+    "block",
+    "mapping",
+    "sequence",
+    "nesting"
+  ],
+  "spec_refs": [
+    "grammar.comments",
+    "grammar.empty-lines",
+    "grammar.block-style-mappings",
+    "grammar.block-style-sequences"
+  ],
+  "emit_profiles": {
+    "standard": {
+      "mode": "standard",
+      "expect_output": "expected_emit_standard.yaml"
+    },
+    "strict": {
+      "mode": "strict",
+      "expect_output": "expected_emit_strict.yaml"
+    },
+    "roundtrip": {
+      "mode": "standard",
+      "options": {
+        "roundtrip": true
+      },
+      "requires": [
+        "roundtrip"
+      ],
+      "expect_output": "expected_emit_roundtrip.yaml"
+    }
+  },
+  "notes": "Comment lines before a nested block's first entry may use any indentation, as they may before later entries.",
+  "parse_profiles": {
+    "baseline": {
+      "modes": "all",
+      "expect_node_graph": "expected_node_graph.json"
+    }
+  }
+}

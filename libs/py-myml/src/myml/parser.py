@@ -71,7 +71,8 @@ class Parser:
     def _parse_block(self, indent: int):
         if self.index >= len(self.lines):
             self._error("Expected a value.", code="missing-value", line=self.lines[-1].number if self.lines else 1, column=1)
-        line = self.lines[self.index]
+        # Comment and blank lines may precede a nested block; the container parsers collect them.
+        line = self.lines[self._next_significant_index()]
         actual = self._indentation(line)
         if actual != indent:
             self._error("Invalid indentation.", code="invalid-indentation", line=line.number, column=actual + 1)
@@ -81,6 +82,7 @@ class Parser:
             return self._parse_sequence(indent)
         if self._find_mapping_separator(body) is not None:
             return self._parse_mapping(indent)
+        self._consume_trivia([])
         return self._parse_root_scalar(indent)
 
     def _parse_root_scalar(self, indent: int):
@@ -574,14 +576,20 @@ class Parser:
                 return text[:index].rstrip(), text[index:]
         return text.rstrip(), None
 
-    def _peek_significant_indent(self) -> int:
+    def _next_significant_index(self) -> int:
         probe = self.index
         while probe < len(self.lines):
             line = self.lines[probe]
             if self._is_blank(line.text) or self._is_comment(line.text):
                 probe += 1
                 continue
-            return self._indentation(line)
+            return probe
+        return probe
+
+    def _peek_significant_indent(self) -> int:
+        probe = self._next_significant_index()
+        if probe < len(self.lines):
+            return self._indentation(self.lines[probe])
         return -1
 
     def _indentation(self, line: Line) -> int:
