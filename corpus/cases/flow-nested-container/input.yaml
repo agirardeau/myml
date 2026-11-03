@@ -1,1 +1,2 @@
-items: [alpha, {nested: true}]
+items: [1, {nested: true, empty: []}, [[2], {}]]
+plan: {dispatches: []} # comment

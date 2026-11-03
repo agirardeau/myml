@@ -181,8 +181,9 @@ its parent entry.
 
 Flow-style mappings and flow-style sequences are restricted as follows:
 
-* A flow container appears on a single line
-* A flow container contains scalar values only
+* A flow container, including any flow containers nested within it, appears on
+  a single line
+* A flow container contains scalar values and nested flow containers
 * Empty flow containers `[]` and `{}` are allowed
 * Comments may follow a flow container
 

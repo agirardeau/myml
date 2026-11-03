@@ -296,9 +296,6 @@ fn parse_node(
         Event::Alias(_) => Err(Error::at("aliases are unsupported", mark)),
         Event::SequenceStart(anchor, tag) => {
             let flow = input.as_bytes().get(mark.index()) == Some(&b'[');
-            if in_flow {
-                return Err(Error::at("nested flow containers are unsupported", mark));
-            }
             if anchor != 0 || tag.is_some() {
                 return Err(Error::at("anchors and tags are unsupported", mark));
             }
@@ -309,14 +306,12 @@ fn parse_node(
                 }
                 v.push(parse_node(events, pos, mode, in_flow || flow, input)?);
             }
+            check_flow_single_line(flow, mark, events[*pos].1)?;
             *pos += 1;
             Ok(Value::Sequence(v))
         }
         Event::MappingStart(anchor, tag) => {
             let flow = input.as_bytes().get(mark.index()) == Some(&b'{');
-            if in_flow {
-                return Err(Error::at("nested flow containers are unsupported", mark));
-            }
             if anchor != 0 || tag.is_some() {
                 return Err(Error::at("anchors and tags are unsupported", mark));
             }
@@ -335,12 +330,20 @@ fn parse_node(
                     return Err(Error::at(format!("duplicate mapping key {key:?}"), keymark));
                 }
             }
+            check_flow_single_line(flow, mark, events[*pos].1)?;
             *pos += 1;
             Ok(Value::Mapping(v))
         }
         _ => Err(Error::at("unexpected YAML syntax", mark)),
     }
 }
+fn check_flow_single_line(flow: bool, start: Marker, end: Marker) -> Result<(), Error> {
+    if flow && end.line() != start.line() {
+        return Err(Error::at("flow containers must stay on one line", start));
+    }
+    Ok(())
+}
+
 fn quoted_scalar_spans_lines(input: &str, mark: Marker, style: TScalarStyle) -> bool {
     let quote = match style {
         TScalarStyle::SingleQuoted => b'\'',
@@ -696,15 +699,6 @@ fn prevalidate(input: &str) -> Result<(), Error> {
                     "empty block scalar at line {}, column {}",
                     i + 1,
                     col + trimmed.find(rhs).unwrap_or(0)
-                )));
-            }
-            if rhs.starts_with('[') && rhs.contains('{')
-                || rhs.starts_with('{') && rhs.contains('[')
-            {
-                return Err(Error::new(format!(
-                    "nested flow container at line {}, column {}",
-                    i + 1,
-                    col
                 )));
             }
             prior_plain = !rhs.is_empty()

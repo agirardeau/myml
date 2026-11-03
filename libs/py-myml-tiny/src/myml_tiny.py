@@ -306,8 +306,6 @@ class Parser:
             return []
         result: list[object] = []
         for part, part_column in self._split_flow_items(inner, line, column + 1):
-            if part.startswith("{") or part.startswith("["):
-                self._error("Flow containers may contain scalar values only.", code="flow-non-scalar-element", line=line, column=part_column, category="unsupported_feature")
             result.append(self._parse_inline_value(part, line, part_column, in_flow=True))
         return result
 
@@ -329,8 +327,6 @@ class Parser:
             if key in seen_keys:
                 self._error("Duplicate mapping key.", code="duplicate-key", line=line, column=part_column, category="semantic_error")
             seen_keys.add(key)
-            if value_text.startswith("{") or value_text.startswith("["):
-                self._error("Flow containers may contain scalar values only.", code="flow-non-scalar-element", line=line, column=part_column + separator + 1, category="unsupported_feature")
             result[key] = self._parse_inline_value(value_text, line, part_column + separator + 1, in_flow=True)
         return result
 
@@ -468,6 +464,7 @@ class Parser:
         quote: str | None = None
         escaped = False
         single_quote_end = False
+        open_brackets: list[str] = []
         for index, char in enumerate(text):
             if quote:
                 if quote == '"':
@@ -493,13 +490,23 @@ class Parser:
             if char in {'"', "'"}:
                 quote = char
                 continue
-            if char == ",":
+            # A bracket opens a nested container only where a value starts; elsewhere it is scalar content.
+            if char in "[{" and text[:index].rstrip()[-1:] in {"", ",", ":", "[", "{"}:
+                open_brackets.append("]" if char == "[" else "}")
+                continue
+            if char in "]}" and open_brackets:
+                if open_brackets.pop() != char:
+                    self._error("Unbalanced flow container brackets.", code="malformed-flow", line=line, column=column + index)
+                continue
+            if char == "," and not open_brackets:
                 part = text[start:index].strip()
                 if not part:
                     self._error("Malformed flow container.", code="malformed-flow", line=line, column=part_column)
                 parts.append((part, part_column + (len(text[start:index]) - len(text[start:index].lstrip()))))
                 start = index + 1
                 part_column = column + index + 1
+        if open_brackets:
+            self._error("Unbalanced flow container brackets.", code="malformed-flow", line=line, column=column - 1)
         tail = text[start:].strip()
         if not tail:
             self._error("Malformed flow container.", code="malformed-flow", line=line, column=part_column)

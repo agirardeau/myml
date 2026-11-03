@@ -199,21 +199,22 @@ def _indent_comment_lines(lines: list[str], indent: int) -> list[str]:
 
 
 def _render_flow_mapping(node: MappingNode, *, mode: str) -> str:
-    parts: list[str] = []
-    for entry in node.entries:
-        if not isinstance(entry.value, ScalarNode):
-            raise TypeError("Flow mappings may contain scalar values only.")
-        parts.append(f"{_render_key(entry.key)}: {_render_scalar(entry.value, mode=mode, in_flow=True, preserve_style=True)}")
+    parts = [f"{_render_key(entry.key)}: {_render_flow_value(entry.value, mode=mode)}" for entry in node.entries]
     return "{%s}" % ", ".join(parts)
 
 
 def _render_flow_sequence(node: SequenceNode, *, mode: str) -> str:
-    parts: list[str] = []
-    for item in node.items:
-        if not isinstance(item.value, ScalarNode):
-            raise TypeError("Flow sequences may contain scalar values only.")
-        parts.append(_render_scalar(item.value, mode=mode, in_flow=True, preserve_style=True))
-    return "[%s]" % ", ".join(parts)
+    return "[%s]" % ", ".join(_render_flow_value(item.value, mode=mode) for item in node.items)
+
+
+def _render_flow_value(node: Node, *, mode: str) -> str:
+    if isinstance(node, MappingNode):
+        return _render_flow_mapping(node, mode=mode)
+    if isinstance(node, SequenceNode):
+        return _render_flow_sequence(node, mode=mode)
+    if node.style in {"literal", "folded"}:
+        raise TypeError("Flow containers may not contain block scalars.")
+    return _render_scalar(node, mode=mode, in_flow=True, preserve_style=True)
 
 
 def _render_key(key: str) -> str:

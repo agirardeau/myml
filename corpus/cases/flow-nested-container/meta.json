@@ -1,37 +1,38 @@
 {
-  "summary": "Nested containers inside flow containers are rejected",
+  "summary": "Flow containers may contain nested flow containers on one line",
   "tags": [
     "flow",
-    "scalar-only",
-    "unsupported"
+    "nesting",
+    "comments"
   ],
   "spec_refs": [
     "containers.flow-style"
   ],
-  "notes": "Uses a flow mapping as a flow sequence element.",
+  "notes": "Nests flow mappings and sequences, including empty ones, within flow containers, and follows one with a comment.",
   "parse_profiles": {
-    "default_y11safety": {
-      "modes": [
-        "standard"
-      ],
-      "expect_error": {
-        "code": "flow-non-scalar-element",
-        "category": "unsupported_feature",
-        "line": 1,
-        "column": 16
-      }
-    },
-    "strict": {
-      "modes": [
-        "strict"
-      ],
-      "expect_error": {
-        "code": "strict-mode-unquoted-string",
-        "category": "mode_restriction",
-        "line": 1,
-        "column": 9
-      }
+    "baseline": {
+      "modes": "all",
+      "expect_node_graph": "expected_node_graph.json"
     }
   },
-  "emit_profiles": {}
+  "emit_profiles": {
+    "standard": {
+      "mode": "standard",
+      "expect_output": "expected_emit_standard.yaml"
+    },
+    "strict": {
+      "mode": "strict",
+      "expect_output": "expected_emit_strict.yaml"
+    },
+    "roundtrip": {
+      "mode": "standard",
+      "options": {
+        "roundtrip": true
+      },
+      "requires": [
+        "roundtrip"
+      ],
+      "expect_output": "expected_emit_roundtrip.yaml"
+    }
+  }
 }

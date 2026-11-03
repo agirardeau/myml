@@ -90,6 +90,13 @@ class FormatAwareApiTests(unittest.TestCase):
         )
         self.assertEqual(loads(text), {"sites": ["a.com", "b.com"], "settings": {"mode": 1}, "items": [{"name": 2}]})
 
+    def test_nested_flow_containers_keep_flow_style_after_edits(self) -> None:
+        document = loads("plan: {dispatches: [], tags: [[a], {b: 1}]} # note\n", roundtrip=True)
+
+        document["plan"]["dispatches"].append("x")
+
+        self.assertEqual(dumps(document, roundtrip=True), "plan: {dispatches: [x], tags: [[a], {b: 1}]} # note\n")
+
     def test_mapping_reorder_requires_complete_key_set(self) -> None:
         document = as_format_aware({"a": 1, "b": 2, "c": 3})
 

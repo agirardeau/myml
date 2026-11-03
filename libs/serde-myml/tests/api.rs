@@ -37,3 +37,19 @@ fn quoted_scalars_must_stay_on_one_line() {
     assert!(from_str::<Value>("value: \"first\\nsecond\"\n").is_ok());
     assert!(from_str::<Value>("value: 'it''s fine'\n").is_ok());
 }
+#[test]
+fn flow_containers_nest_on_one_line() {
+    let value =
+        from_str::<Value>("scopes:\n  plan: {dispatches: [], tags: [[a], {b: 1}]}\n").unwrap();
+    assert_eq!(
+        to_string(&value).unwrap(),
+        "scopes:\n  plan:\n    dispatches: []\n    tags:\n      -\n        - a\n      - b: 1\n"
+    );
+    for input in [
+        "value: [a,\n  b]\n",
+        "value: [a, {b: 1,\n  c: 2}]\n",
+        "value: {a: [1,\n  2]}\n",
+    ] {
+        assert!(from_str::<Value>(input).is_err(), "{input:?}");
+    }
+}
