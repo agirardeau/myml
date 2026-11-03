@@ -1,0 +1,26 @@
+{
+  "summary": "A byte order mark inside an unquoted scalar is rejected",
+  "tags": [
+    "byte-order-mark",
+    "unquoted-string",
+    "invalid",
+    "lexical"
+  ],
+  "spec_refs": [
+    "grammar.encoding",
+    "grammar.unquoted-strings"
+  ],
+  "notes": "U+FEFF sits between `a` and `b` and is invisible in most editors. YAML 1.2 allows a byte order mark only at the start of a document or inside quoted scalars.",
+  "parse_profiles": {
+    "all": {
+      "modes": "all",
+      "expect_error": {
+        "code": "invalid-character",
+        "category": "lexical_error",
+        "line": 1,
+        "column": 9
+      }
+    }
+  },
+  "emit_profiles": {}
+}

@@ -729,6 +729,13 @@ pub(crate) fn plain_scalar(
 ) -> Result<Value, Error> {
     let err = |message: &str| Err(Error::at(message, line, col));
     let range = || Error::at("numeric range exceeded", line, col);
+    if let Some(i) = token.find('\u{feff}') {
+        return Err(Error::at(
+            "a byte order mark is not allowed in an unquoted scalar",
+            line,
+            col + chars(&token[..i]),
+        ));
+    }
     match token {
         "" => return err("expected a value"),
         "null" => return Ok(Value::Null),

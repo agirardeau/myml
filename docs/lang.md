@@ -22,7 +22,11 @@ Mapping keys are strings.
 
 ## Encoding and Line Breaks
 
-A Myml document is UTF-8 text.
+A Myml document is UTF-8 text. It may begin with a byte order mark (U+FEFF),
+which is not content. A byte order mark is not allowed in unquoted scalars.
+
+Characters that YAML 1.2 does not allow unescaped, such as most control
+characters, are errors; double-quoted strings may contain them as escapes.
 
 Line breaks are CRLF, CR, or LF, and a document may mix them. Each line break
 within a scalar value is read as LF.
@@ -237,7 +241,8 @@ Useful error messages are produced for, at minimum:
 
 The standard serialized form uses:
 
-* UTF-8 encoding
+* UTF-8 encoding without a byte order mark
+* LF line breaks
 * Block-style containers only
 * Compact block mappings within sequences, with the first mapping entry on the
   same line as the `-` sequence marker

@@ -130,6 +130,8 @@ def _fold_block_lines(lines: list[str]) -> str:
 
 class Parser:
     def __init__(self, text: str, *, mode: str = "standard") -> None:
+        # A leading byte order mark is not content.
+        text = text.removeprefix("\ufeff")
         self.text = text
         self.lines = [Line(index + 1, raw) for index, raw in enumerate(_split_lines(text))]
         self.index = 0
@@ -463,6 +465,14 @@ class Parser:
         return value
 
     def _parse_plain_scalar(self, token: str, line: int, column: int, *, in_flow: bool, mode: str | None = None):
+        if "\ufeff" in token:
+            self._error(
+                "A byte order mark is not allowed in an unquoted scalar.",
+                code="invalid-character",
+                line=line,
+                column=column + token.index("\ufeff"),
+                category="lexical_error",
+            )
         if token in {"true", "false"}:
             return token == "true"
         if token == "null":
